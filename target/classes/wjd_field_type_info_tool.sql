@@ -1,4 +1,3 @@
-CREATE TABLE dsep.wjd_field_type_info_tool AS
 SELECT t1.rec_id,
        t1.act_property_id,
        t1.address,
@@ -291,4 +290,3 @@ LEFT JOIN stg_tc_region t8 ON t1.duty_region_id = t8.region_id
 LEFT JOIN stg_tc_region t9 ON t1.duty_district_id = t9.region_id
 LEFT JOIN stg_tc_region t10 ON t1.duty_street_id = t10.region_id
 LEFT JOIN stg_tc_region t11 ON t1.duty_community_id = t11.region_id
-LIMIT 1

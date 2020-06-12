@@ -26,20 +26,39 @@ public class HiveJDBC {
     }
 
     public static void main(String[] args) throws SQLException, IOException {
+        String header = "CREATE TABLE dsep.wjd_field_type_info_tool AS";
+
         FileReader reader = new FileReader("src/main/resources/wjd_field_type_info_tool.sql");
         BufferedReader bufferedReader = new BufferedReader(reader);
         String line = null;
         StringBuilder sb = new StringBuilder();
+        sb.append(header + "\n");
         while ((line = bufferedReader.readLine()) != null) {
             sb.append(line + "\n");
         }
-//        stmt.execute(sb.toString());
+        sb.append("limit 1");
+        try {
+            stmt.execute("show create table dsep.wjd_field_type_info_tool");
+        } catch (Exception e) {
+            if (e == null) {
+                stmt.execute("drop table dsep.wjd_field_type_info_tool");
+            }
+        }
+
+        stmt.execute(sb.toString());
 
         ResultSet resultSet = stmt.executeQuery("desc wjd_field_type_info_tool");
 
 
         while (resultSet.next()) {
-            System.out.println(resultSet.getString(2));
+            if (resultSet.getString(2).equals("timestamp")) {
+                System.out.println("string");
+            } else {
+                System.out.println(resultSet.getString(2));
+            }
         }
+
+        stmt.close();
+        conn.close();
     }
 }
