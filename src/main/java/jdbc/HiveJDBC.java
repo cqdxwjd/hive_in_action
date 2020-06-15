@@ -36,7 +36,6 @@ public class HiveJDBC {
         while ((line = bufferedReader.readLine()) != null) {
             sb.append(line + "\n");
         }
-        sb.append("limit 1");
         try {
             stmt.execute("show create table dsep.wjd_field_type_info_tool");
         } catch (Exception e) {
@@ -44,6 +43,7 @@ public class HiveJDBC {
                 stmt.execute("drop table dsep.wjd_field_type_info_tool");
             }
         }
+        stmt.execute("drop table if exists dsep.wjd_field_type_info_tool");
 
         stmt.execute(sb.toString());
 
@@ -51,8 +51,10 @@ public class HiveJDBC {
 
 
         while (resultSet.next()) {
-            if (resultSet.getString(2).equals("timestamp")) {
+            if (resultSet.getString(2).equals("timestamp") | resultSet.getString(2).equals("void") | resultSet.getString(2).equals("date")) {
                 System.out.println("string");
+            } else if (resultSet.getString(2).equals("int")) {
+                System.out.println("bigint");
             } else {
                 System.out.println(resultSet.getString(2));
             }
