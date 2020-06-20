@@ -2,10 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="5a5f4b0a-63bc-4b71-9709-c3626f098dfc" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/hive_in_action.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/hive_in_action.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/resources/wjd_field_type_info_tool.sql" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/wjd_field_type_info_tool.sql" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/wjd_field_type_info_tool.sql" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/wjd_field_type_info_tool.sql" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/out/" />
     <ignored path="$PROJECT_DIR$/target/" />
@@ -20,7 +19,7 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/main/java/jdbc/HiveJDBC.java">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="540">
@@ -32,11 +31,11 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/main/resources/wjd_field_type_info_tool.sql">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="255">
-              <caret line="17" column="7" selection-start-line="17" selection-start-column="7" selection-end-line="17" selection-end-column="7" />
+            <state relative-caret-position="120">
+              <caret line="8" column="57" selection-start-line="8" selection-start-column="57" selection-end-line="8" selection-end-column="57" />
             </state>
           </provider>
         </entry>
@@ -118,8 +117,6 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="Scope" />
-      <pane id="PackagesPane" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -169,6 +166,8 @@
           <select />
         </subPane>
       </pane>
+      <pane id="PackagesPane" />
+      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -228,21 +227,23 @@
       <workItem from="1591875511118" duration="5551000" />
       <workItem from="1591923823352" duration="2304000" />
       <workItem from="1592554422641" duration="922000" />
+      <workItem from="1592623233808" duration="49000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="8777000" />
+    <option name="totallyTimeSpent" value="8826000" />
   </component>
   <component name="ToolWindowManager">
-    <frame x="61" y="23" width="1987" height="1257" extended-state="6" />
+    <frame x="67" y="23" width="1981" height="1257" extended-state="6" />
+    <editor active="true" />
     <layout>
       <window_info id="Designer" order="0" />
       <window_info id="Image Layers" order="1" />
       <window_info id="Capture Tool" order="2" />
       <window_info id="UI Designer" order="3" />
       <window_info id="Favorites" order="4" side_tool="true" />
-      <window_info content_ui="combo" id="Project" order="5" visible="true" weight="0.26169667" />
+      <window_info active="true" content_ui="combo" id="Project" order="5" visible="true" weight="0.19391438" />
       <window_info id="Project Explorer" order="6" />
       <window_info id="Job Explorer" order="7" />
       <window_info anchor="bottom" id="Message" order="0" />
@@ -286,6 +287,16 @@
     <entry file="jar://$MAVEN_REPOSITORY$/org/apache/hive/hive-exec/1.1.1/hive-exec-1.1.1.jar!/org/apache/hadoop/hive/ql/plan/DescDatabaseDesc.class" />
     <entry file="jar://$MAVEN_REPOSITORY$/org/apache/hive/hive-exec/1.1.1/hive-exec-1.1.1.jar!/com/google/common/collect/DescendingMultiset.class" />
     <entry file="jar://$MAVEN_REPOSITORY$/org/apache/hive/hive-exec/1.1.1/hive-exec-1.1.1-sources.jar!/org/apache/hadoop/hive/ql/parse/HiveParser_IdentifiersParser.java" />
+    <entry file="file://$PROJECT_DIR$/src/main/java/jdbc/HiveJDBC.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="540">
+          <caret line="36" column="35" selection-start-line="36" selection-start-column="35" selection-end-line="36" selection-end-column="35" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/pom.xml">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1035">
@@ -302,18 +313,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/main/resources/wjd_field_type_info_tool.sql">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="255">
-          <caret line="17" column="7" selection-start-line="17" selection-start-column="7" selection-end-line="17" selection-end-column="7" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/jdbc/HiveJDBC.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="540">
-          <caret line="36" column="35" selection-start-line="36" selection-start-column="35" selection-end-line="36" selection-end-column="35" />
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
+        <state relative-caret-position="120">
+          <caret line="8" column="57" selection-start-line="8" selection-start-column="57" selection-end-line="8" selection-end-column="57" />
         </state>
       </provider>
     </entry>
