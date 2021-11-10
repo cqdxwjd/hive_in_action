@@ -87,3 +87,125 @@ from(
     ) a
 where a.ConsecutiveNums is not null
 ;
+
+--删除重复的电子邮箱
+create table Person(
+                       Id bigint,
+                       Email string
+);
+
+insert into table Person values
+    (1,'john@example.com'),
+    (2,'bob@example.com'),
+    (3,'john@example.com');
+
+select
+    a.Id,
+    a.Email
+from
+    (
+        select
+            Id as Id,
+            Email as Email,
+            row_number() over(partition by Email order by Id asc) as rn
+        from Person
+    ) a
+where a.rn = 1
+order by a.Id
+;
+
+--行程和用户
+create table Trips(
+                      Id bigint,
+                      Client_Id bigint,
+                      Driver_Id bigint,
+                      City_Id bigint,
+                      Status String,
+                      Request_at date
+);
+
+
+insert into table Trips values
+    (1,1,10,1,'completed','2013-10-01')
+    ,(2,2,11,1,'cancelled_by_driver','2013-10-01')
+    ,(3,3,12,6,'completed','2013-10-01')
+    ,(4,4,13,6,'cancelled_by_client','2013-10-01')
+    ,(5,1,10,1,'completed','2013-10-02')
+    ,(6,2,11,6,'completed','2013-10-02')
+    ,(7,3,12,6,'completed','2013-10-02')
+    ,(8,2,12,12,'completed','2013-10-03')
+    ,(9,3,10,12,'completed','2013-10-03')
+    ,(10,4,13,12,'cancelled_by_driver','2013-10-03');
+
+create table Users(
+                      User_id bigint,
+                      Banned string,
+                      Role string
+);
+
+insert into table Users values
+    (1,'No','client')
+    ,(2,'Yes','client')
+    ,(3,'No','client')
+    ,(4,'No','client')
+    ,(10,'No','driver')
+    ,(11,'No','driver')
+    ,(12,'No','driver')
+    ,(13,'No','driver');
+
+select
+    c.Request_at as Day,
+    round(sum(num)/count(*),2) as Cancellation_Rate
+from
+    (
+    select
+    b.Request_at as Request_at,
+    if(b.Status <> 'completed',1,0) as num --给取消的行程一个计数值1
+    from
+    (
+    select
+    User_id
+    from Users
+    where Banned <> 'Yes' and Role = 'client'
+    ) a
+    left join Trips b
+    on a.User_id = b.Client_Id
+    ) c
+group by c.Request_at
+;
+
+--可以省略一层子查询
+select
+    b.Request_at as Day,
+    round(sum(if(b.Status <> 'completed',1,0))/count(*),2) as Cancellation_Rate --给取消的订单一个计数值1,加总即为取消的订单数，然后除以总订单数
+from
+    (
+    select
+    User_id
+    from Users
+    where Banned <> 'Yes' and Role = 'client'
+    ) a
+    left join Trips b
+on a.User_id = b.Client_Id
+group by b.Request_at
+;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
