@@ -190,7 +190,77 @@ on a.User_id = b.Client_Id
 group by b.Request_at
 ;
 
+--游戏玩法分析
+create table Activity(
+                         player_id int,
+                         device_id int,
+                         event_date date,
+                         games_played int
+);
 
+insert into table Activity values
+    (1,2,'2016-03-01',5)
+    ,(1,2,'2016-05-02',6)
+    ,(2,3,'2017-06-25',1)
+    ,(3,1,'2016-03-02',0)
+    ,(3,4,'2018-07-03',5);
+
+select
+    player_id as player_id,
+    min(event_date) as first_login
+from Activity
+group by player_id
+;
+
+--员工薪水中位数
+create table Employee(
+                         Id bigint,
+                         Company string,
+                         Salary double
+);
+
+insert into table Employee values
+    (1,'A',2341  )
+    ,(2,'A',341   )
+    ,(3,'A',15    )
+    ,(4,'A',15314 )
+    ,(5,'A',451   )
+    ,(6,'A',513   )
+    ,(7,'B',15    )
+    ,(8,'B',13    )
+    ,(9,'B',1154  )
+    ,(10,'B',1345 )
+    ,(11,'B',1221 )
+    ,(12,'B',234  )
+    ,(13,'C',2345 )
+    ,(14,'C',2645 )
+    ,(15,'C',2645 )
+    ,(16,'C',2652 )
+    ,(17,'C',65   );
+
+select
+    min(c.Id) as Id,
+    c.Company,
+    c.Salary
+from
+    (
+        select
+            a.Id,
+            a.Company,
+            a.Salary
+        from Employee a
+                 left join Employee b
+                           on a.Company = b.Company
+        group by
+            a.Id,
+            a.Company,
+            a.Salary
+        having sum(case when a.Salary>b.Salary then 1 when a.Salary=b.Salary then 0 else -1 end) in (1,-1)
+    ) c
+group by
+    c.Company,
+    c.Salary
+;
 
 
 
