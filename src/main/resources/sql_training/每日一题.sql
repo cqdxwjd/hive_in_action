@@ -262,6 +262,71 @@ group by
     c.Salary
 ;
 
+--员工奖金【难度简单】
+--选出所有 bonus < 1000 的员工的 name 及其 bonus
+
+create table Employee(
+                         empId bigint,
+                         name string,
+                         supervisor bigint,
+                         salary double
+);
+
+insert into table Employee values
+    (1,'John',3,1000),
+    (2,'Dan',3,2000),
+    (3,'Brad',null,4000),
+    (4,'Thomas',3,4000);
+
+create table Bonus(
+                      empId bigint,
+                      bonus double
+);
+
+insert into table Bonus values
+    (2,500),
+    (4,2000);
+
+select
+    a.name,
+    b.bonus
+from Employee a
+         left join Bonus b
+                   on a.empId = b.empId
+where b.bonus < 1000 or b.bonus is null;
+
+--至少有5名直接下属的经理
+
+create table Employee(
+                         Id bigint,
+                         Name string,
+                         Department string,
+                         ManagerId bigint
+);
+
+insert into table Employee values
+    (101,'John','A',null),
+    (102,'Dan','A',101),
+    (103,'James','A',101),
+    (104,'Amy','A',101),
+    (105,'Anne','A',101),
+    (106,'Ron','B',101);
+
+select
+    c.Name
+from
+    (
+        select
+            a.Id,
+            a.Name
+        from Employee a
+                 left join Employee b
+                           on a.Id = b.ManagerId
+        group by a.Id,a.Name --用Id分组，防止同名情况
+        having count(*) >= 5
+    ) c
+;
+
 
 
 
