@@ -327,7 +327,60 @@ from
     ) c
 ;
 
+--寻找用户推荐人【难度简单】
 
+create table customer(
+                         id bigint,
+                         name string,
+                         referee_id bigint
+);
+
+insert into table customer values
+    (1,'Will',null),
+    (2,'Jane',null),
+    (3,'Alex',2),
+    (4,'Bill',null),
+    (5,'Zack',1),
+    (6,'Mark',2);
+
+select
+    name
+from customer
+where referee_id <> 2 or referee_id is null;
+
+--统计各专业学生人数【难度中等】
+
+create table student(
+                        student_id bigint,
+                        student_name string,
+                        gender string,
+                        dept_id bigint
+);
+
+create table department(
+                           dept_id bigint,
+                           dept_name string
+);
+
+insert into table student values
+    (1,'Jack','M',1),
+    (2,'Jane','F',1),
+    (3,'Mark','M',2);
+
+insert into table department values
+    (1,'Engineering'),
+    (2,'Science'),
+    (3,'Law');
+
+select
+    a.dept_name as dept_name,
+    sum(if(b.student_id is null,0,1)) as student_number
+from department a
+         left join student b
+                   on a.dept_id = b.dept_id
+group by dept_name
+order by student_number desc,dept_name asc
+;
 
 
 
