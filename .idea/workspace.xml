@@ -4,7 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="5a5f4b0a-63bc-4b71-9709-c3626f098dfc" name="Default Changelist" comment="">
+    <list default="true" id="5a5f4b0a-63bc-4b71-9709-c3626f098dfc" name="Default Changelist" comment="sql打卡 20211113">
+      <change afterPath="$PROJECT_DIR$/src/main/resources/sql_training/sql进阶教程案例.sql" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/resources/sql_training/每日一题.sql" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/sql_training/每日一题.sql" afterDir="false" />
     </list>
@@ -176,6 +177,17 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
+    <configuration default="true" type="ArquillianJUnit" factoryName="" nameIsGenerated="true">
+      <option name="arquillianRunConfiguration">
+        <value>
+          <option name="containerStateName" value="" />
+        </value>
+      </option>
+      <option name="TEST_OBJECT" value="class" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
     <recent_temporary>
       <list>
         <item itemvalue="Application.HiveJDBC" />
@@ -207,7 +219,9 @@
       <workItem from="1636515427611" duration="37000" />
       <workItem from="1636599518853" duration="30000" />
       <workItem from="1636683746606" duration="51000" />
-      <workItem from="1636775691707" duration="9000" />
+      <workItem from="1636775691707" duration="27000" />
+      <workItem from="1636955542684" duration="797000" />
+      <workItem from="1637221088862" duration="1176000" />
     </task>
     <task id="LOCAL-00001" summary="sql打卡 20211109">
       <created>1636424450922</created>
@@ -237,7 +251,14 @@
       <option name="project" value="LOCAL" />
       <updated>1636683781928</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="sql打卡 20211113">
+      <created>1636775711230</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1636775711230</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
@@ -303,7 +324,8 @@
     <MESSAGE value="sql打卡 20211110" />
     <MESSAGE value="sql打卡 20211111" />
     <MESSAGE value="sql打卡 20211112" />
-    <option name="LAST_COMMIT_MESSAGE" value="sql打卡 20211112" />
+    <MESSAGE value="sql打卡 20211113" />
+    <option name="LAST_COMMIT_MESSAGE" value="sql打卡 20211113" />
   </component>
   <component name="editorHistoryManager">
     <entry file="jar://$MAVEN_REPOSITORY$/org/apache/hive/hive-common/1.1.1/hive-common-1.1.1-sources.jar!/org/apache/hadoop/hive/common/CompressionUtils.java" />

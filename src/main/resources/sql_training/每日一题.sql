@@ -382,6 +382,297 @@ group by dept_name
 order by student_number desc,dept_name asc
 ;
 
+-- 判断三角形【难度简单】
+
+create table triangle(
+                         x double,
+                         y double,
+                         z double
+)
+;
+
+insert into table triangle values
+    (13,15,30),
+    (10,20,15)
+;
+
+select
+    a.x as x,
+    a.y as y,
+    a.z as z,
+    if(a.arr[0]+a.arr[1]>a.arr[2],'Yes','No') as triangle -- 最小的两条边之和大于第三边即可构成三角形
+from
+    (
+        select
+            x as x,
+            y as y,
+            z as z,
+            sort_array(array(x,y,z)) as arr --升序排序
+        from triangle
+    ) a
+;
+
+
+--平面上的最近距离【难度中等】
+
+create table point_2d(
+                         x int,
+                         y int
+);
+
+insert into table point_2d values
+    (-1,-1),
+    (0,0),
+    (-1,-2)
+;
+
+select
+    min(sqrt((a.x-b.x)*(a.x-b.x)+(a.y-b.y)*(a.y-b.y))) as shortest
+from point_2d a
+         left join point_2d b
+                   on (a.x <> b.x or a.y <> b.y)
+;
+
+--有趣的电影【难度简单】
+
+create table cinema(
+                       id bigint,
+                       movie string,
+                       description string,
+                       rating double
+);
+
+insert into table cinema values
+    (1,'War','great 3D',8.9),
+    (2,'Science','fiction',8.5),
+    (3,'irish','boring',6.2),
+    (4,'Ice song','Fantacy',8.6),
+    (5,'House card','Interesting',9.1)
+;
+
+select
+    id,
+    movie,
+    description,
+    rating
+from cinema
+where description <> 'boring' and id%2 <> 0
+order by rating desc
+;
+
+--平均工资：部门与公司比较【难度困难】
+
+create table salary(
+                       id bigint,
+                       employee_id bigint,
+                       amount double,
+                       pay_date date
+)
+;
+
+insert into table salary values
+    (1,1,9000,'2017-03-31'),
+    (2,2,6000,'2017-03-31'),
+    (3,3,10000,'2017-03-31'),
+    (4,1,7000,'2017-02-28'),
+    (5,2,6000,'2017-02-28'),
+    (6,3,8000,'2017-02-28')
+;
+
+create table employee(
+                         employee_id bigint,
+                         department_id bigint
+)
+;
+
+insert into table employee values
+    (1,1),
+    (2,2),
+    (3,2)
+;
+
+select
+    c.pay_month as pay_month,
+    c.department_id as department_id,
+    c.comparison as comparison
+from
+    (
+        select
+            date_format(b.pay_date,'yyyy-MM') as pay_month,
+            a.department_id as department_id,
+            case when
+                     sum(b.amount) over (partition by date_format(b.pay_date,'yyyy-MM'),a.department_id)/count(*) over (partition by date_format(b.pay_date,'yyyy-MM'),a.department_id) --当月部门内平均值
+            >
+            sum(b.amount) over (partition by date_format(b.pay_date,'yyyy-MM'))/count(*) over (partition by date_format(b.pay_date,'yyyy-MM')) --当月公司总平均值
+            then 'higher'
+            when
+            sum(b.amount) over (partition by date_format(b.pay_date,'yyyy-MM'),a.department_id)/count(*) over (partition by date_format(b.pay_date,'yyyy-MM'),a.department_id) --当月部门内平均值
+            <
+            sum(b.amount) over (partition by date_format(b.pay_date,'yyyy-MM'))/count(*) over (partition by date_format(b.pay_date,'yyyy-MM')) --当月公司总平均值
+            then 'lower'
+            else 'same'
+            end as comparison
+        from employee a
+            left join salary b
+        on a.employee_id = b.employee_id
+    ) c
+group by
+    c.pay_month,
+    c.department_id,
+    c.comparison
+;
+
+--换座位【难度中等】
+
+create table seat(
+                     id int,
+                     student string
+);
+
+insert into table seat values
+    (1,'Abbot'),
+    (2,'Doris'),
+    (3,'Emerson'),
+    (4,'Green'),
+    (5,'Jeames')
+;
+
+select
+    a.id as id,
+    case
+        when a.id % 2 <> 0 and a.next is not null
+    then a.next
+    when a.id % 2 = 0
+    then a.pre
+    else a.student
+end as student
+from
+(
+    select
+        id,
+        student,
+        lag(student) over (order by id) as pre,
+        lead(student) over (order by id) as next
+    from seat
+) a
+;
+
+--买下所有产品的客户【难度中等】
+
+create table Customer(
+                         customer_id int,
+                         product_key int
+);
+
+create table Product(
+    product_key int
+);
+
+insert into table Customer values
+    (1,5),
+    (2,6),
+    (3,5),
+    (3,6),
+    (1,6)
+;
+
+insert into table Product values
+    (5),
+    (6)
+;
+
+select
+    c.customer_id as customer_id
+from
+    (
+        select
+            b.customer_id as customer_id,
+            count(distinct a.product_key) over () as prod_num,
+                count(*) over (partition by b.customer_id) as cust_num
+        from Product a
+                 left join Customer b
+                           on a.product_key = b.product_key
+    ) c
+where c.prod_num = c.cust_num
+group by c.customer_id
+;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
