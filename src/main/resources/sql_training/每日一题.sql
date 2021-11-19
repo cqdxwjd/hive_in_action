@@ -598,93 +598,54 @@ group by c.customer_id
 ;
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+--产品销售分析 II【难度简单】
+CREATE TABLE sales(
+                      sale_id INT,
+                      product_id INT,
+                      year INT,
+                      quantity INT,
+                      price INT
+);
+
+CREATE TABLE product(
+                        product_id INT,
+                        product_name STRING
+);
+
+INSERT INTO TABLE sales VALUES
+    (1,100,2008,10,5000),
+    (2,100,2009,12,5000),
+    (7,200,2011,15,9000)
+;
+
+INSERT INTO TABLE product VALUES
+    (100,'Nokia'),
+    (200,'Apple'),
+    (300,'Samsung')
+;
+
+-- 对产品id分组求数量和即可
+SELECT
+    product_id AS product_id,
+    SUM(quantity) AS total_quantity
+FROM sales
+GROUP BY product_id
+;
+
+--产品销售分析 III【难度中等】
+--选出每个销售产品的 第一年 的 产品 id、年份、数量 和 价格
+--方法：使用排序函数分组排序后取第一行
+SELECT
+    product_id AS product_id,
+    year AS first_year,
+    quantity AS quantity,
+    price AS price
+FROM
+    (
+    SELECT
+    *,
+    ROW_NUMBER() OVER (PARTITION BY product_id ORDER BY year ASC) AS rn
+    FROM sales
+    ) a
+WHERE a.rn = 1
+;

@@ -238,7 +238,117 @@ ORDER BY
     key DESC
 ;
 
+--删除产品表里面重复的行
+CREATE TABLE product(
+                        name STRING,
+                        price INT
+);
 
+INSERT INTO TABLE product VALUES
+    ('苹果',50),
+    ('橘子',100),
+    ('橘子',100),
+    ('橘子',100),
+    ('香蕉',80)
+;
+
+-- 方式1：使用排序函数分组排序后取第一行
+SELECT
+    name AS name,
+    price AS price
+FROM
+    (
+        SELECT
+            *,
+            ROW_NUMBER() OVER (PARTITION BY name,price) AS rn
+        FROM product
+    ) a
+WHERE a.rn = 1
+;
+
+-- 方式2：使用hive DISTINCT去重,DISTINCT会对后面所有列都起作用
+SELECT DISTINCT name,price FROM product;
+
+-- 方式3：使用hive GROUP BY去重
+SELECT name,price FROM product GROUP BY name,price;
+
+-- 自从hive1.1.0版本引入SELECT DISTINCT *以来，在所有版本中，方式2和方式3完全等价，查看两者的执行计划可以发现完全一样，所以效率是一样的。
+-- 另外当开启数据倾斜负载均衡的情况下，即设置set hive.groupby.skewindata=true时，hive为对DISTINCT和GROUP BY进行优化，多出一个job首先进行部分的聚合，将数据随机分散到不通过的reducer中，再通过后续的job继续进行数据的处理
+
+--从下面这张商品表里找出价格相等的商品的组合
+CREATE TABLE products(
+                         name STRING,
+                         price INT
+);
+
+INSERT INTO TABLE products VALUES
+    ('苹果',50),
+    ('橘子',100),
+    ('葡萄',50),
+    ('西瓜',80),
+    ('柠檬',30),
+    ('草莓',100),
+    ('香蕉',100)
+;
+
+SELECT
+    DISTINCT a.name,a.price
+FROM products a
+         CROSS JOIN products b
+    on a.price = b.price AND a.name <> b.name
+;
+
+-- 排序从 1 开始。如果已出现相同位次，则跳过之后的位次
+-- 方式1：不使用窗口函数实现排序，出现相同位次时，跳过之后的位次
+SELECT
+    c.name,
+    c.price,
+    SUM(c.num)+1 AS less_num
+FROM
+    (
+        SELECT
+            a.name AS name,
+            a.price AS price,
+            IF(b.price IS NULL,0,1) AS num
+        FROM products a
+                 LEFT JOIN products b
+                           ON a.price > b.price
+    ) c
+GROUP BY
+    c.name,
+    c.price
+ORDER BY
+    less_num
+;
+
+-- 方式2：使用窗口函数实现排序
+SELECT
+    name,
+    price,
+    RANK() OVER (ORDER BY price) AS rn1,
+        ROW_NUMBER() OVER (ORDER BY price) AS rn2,
+        DENSE_RANK() OVER (ORDER BY price) AS rn3
+FROM products
+;
+
+--可重组合
+CREATE TABLE products(
+    name STRING
+);
+
+INSERT INTO TABLE products VALUES
+    ('香蕉'),
+    ('苹果'),
+    ('橘子')
+;
+
+SELECT
+    a.name,
+    b.name
+FROM products a
+         LEFT JOIN products b
+                   ON a.name >= b.name
+;
 
 
 
