@@ -6,7 +6,6 @@
   <component name="ChangeListManager">
     <list default="true" id="5a5f4b0a-63bc-4b71-9709-c3626f098dfc" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/sql_training/sql进阶教程案例.sql" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/sql_training/sql进阶教程案例.sql" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/resources/sql_training/每日一题.sql" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/sql_training/每日一题.sql" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -211,7 +210,8 @@
       <workItem from="1636775691707" duration="27000" />
       <workItem from="1636955542684" duration="797000" />
       <workItem from="1637221088862" duration="1195000" />
-      <workItem from="1637307295964" duration="47000" />
+      <workItem from="1637307295964" duration="62000" />
+      <workItem from="1637559266931" duration="9000" />
     </task>
     <task id="LOCAL-00001" summary="sql打卡 20211109">
       <created>1636424450922</created>
@@ -255,7 +255,14 @@
       <option name="project" value="LOCAL" />
       <updated>1637232064850</updated>
     </task>
-    <option name="localTasksCounter" value="7" />
+    <task id="LOCAL-00007" summary="sql打卡 20211119">
+      <created>1637307349897</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1637307349897</updated>
+    </task>
+    <option name="localTasksCounter" value="8" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
@@ -323,7 +330,8 @@
     <MESSAGE value="sql打卡 20211112" />
     <MESSAGE value="sql打卡 20211113" />
     <MESSAGE value="sql打卡 20211118" />
-    <option name="LAST_COMMIT_MESSAGE" value="sql打卡 20211118" />
+    <MESSAGE value="sql打卡 20211119" />
+    <option name="LAST_COMMIT_MESSAGE" value="sql打卡 20211119" />
   </component>
   <component name="editorHistoryManager">
     <entry file="jar://$MAVEN_REPOSITORY$/org/apache/hive/hive-common/1.1.1/hive-common-1.1.1-sources.jar!/org/apache/hadoop/hive/common/CompressionUtils.java" />

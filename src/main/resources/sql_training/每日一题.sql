@@ -649,3 +649,136 @@ FROM
     ) a
 WHERE a.rn = 1
 ;
+
+--游戏玩法分析 V【难度困难】
+CREATE TABLE activity(
+                         player_id INT,
+                         device_id INT,
+                         event_date DATE,
+                         games_played INT
+);
+
+INSERT INTO TABLE activity VALUES
+    (1,2,'2016-03-01',5),
+    (1,2,'2016-03-02',6),
+    (2,3,'2017-06-25',1),
+    (3,1,'2016-03-01',0),
+    (3,4,'2016-07-03',5)
+;
+
+--第一步：先通过自连接判断玩家是否有下一天留存
+SELECT
+    a.player_id AS player_id,
+    a.event_date AS event_date,
+    IF(b.player_id IS NOT NULL,1,0) AS next_day_retention --玩家是否有下一天的留存，有标记为1，否则标记为0
+FROM activity AS a
+         LEFT JOIN activity AS b
+                   ON a.player_id = b.player_id AND DATE_ADD(a.event_date,1) = b.event_date
+;
+
+--结果
+-- player_id       event_date      next_day_retention
+-- 1       2016-03-01      1
+-- 1       2016-03-02      0
+-- 2       2017-06-25      0
+-- 3       2016-03-01      0
+-- 3       2016-07-03      0
+
+--第二步：由于要求安装日期的第一天留存，需要取每个玩家的最小登录日期对应的记录，使用窗口函数分组排序最最小
+SELECT
+    d.player_id AS player_id,
+    d.event_date AS install_dt,
+    d.next_day_retention AS first_day_retention --安装日期第一天是否留存
+FROM
+    (
+        SELECT
+            c.player_id AS player_id,
+            c.event_date AS event_date,
+            ROW_NUMBER() OVER(PARTITION BY c.player_id ORDER BY c.event_date ASC) AS rn,
+                c.next_day_retention AS next_day_retention
+        FROM
+            (
+                SELECT
+                    a.player_id AS player_id,
+                    a.event_date AS event_date,
+                    IF(b.player_id IS NOT NULL,1,0) AS next_day_retention --玩家是否有下一天的留存，有标记为1，否则标记为0
+                FROM activity AS a
+                         LEFT JOIN activity AS b
+                                   ON a.player_id = b.player_id AND DATE_ADD(a.event_date,1) = b.event_date
+            ) c
+    ) d
+WHERE d.rn = 1
+;
+
+--结果
+-- player_id       event_date      first_day_retention
+-- 1       2016-03-01      1
+-- 2       2017-06-25      0
+-- 3       2016-03-01      0
+
+--第三步：对安装日期分组，COUNT(*)为当天的安装数量，SUM(first_day_retention)为第一天留存数量
+SELECT
+    e.install_dt AS install_dt,
+    COUNT(*) AS installs,
+    ROUND(SUM(first_day_retention)/COUNT(*),2) AS Day1_retention
+FROM
+    (
+        SELECT
+            d.player_id AS player_id,
+            d.event_date AS install_dt,
+            d.next_day_retention AS first_day_retention --安装日期第一天是否留存
+        FROM
+            (
+                SELECT
+                    c.player_id AS player_id,
+                    c.event_date AS event_date,
+                    ROW_NUMBER() OVER(PARTITION BY c.player_id ORDER BY c.event_date ASC) AS rn,
+                        c.next_day_retention AS next_day_retention
+                FROM
+                    (
+                        SELECT
+                            a.player_id AS player_id,
+                            a.event_date AS event_date,
+                            IF(b.player_id IS NOT NULL,1,0) AS next_day_retention --玩家是否有下一天的留存，有标记为1，否则标记为0
+                        FROM activity AS a
+                                 LEFT JOIN activity AS b
+                                           ON a.player_id = b.player_id AND DATE_ADD(a.event_date,1) = b.event_date
+                    ) c
+            ) d
+        WHERE d.rn = 1
+    ) e
+GROUP BY
+    e.install_dt
+;
+--结果
+-- install_dt      installs        day1_retention
+-- 2016-03-01      2       0.5
+-- 2017-06-25      1       0.0
+
+--可对嵌套查询做一下简化，最终SQL如下
+SELECT
+    d.event_date AS install_dt,
+    COUNT(*) AS installs,
+    ROUND(SUM(d.next_day_retention)/COUNT(*),2) AS Day1_retention --安装日期第一天留存率
+FROM
+    (
+        SELECT
+            c.player_id AS player_id,
+            c.event_date AS event_date,
+            ROW_NUMBER() OVER(PARTITION BY c.player_id ORDER BY c.event_date ASC) AS rn,
+                c.next_day_retention AS next_day_retention
+        FROM
+            (
+                SELECT
+                    a.player_id AS player_id,
+                    a.event_date AS event_date,
+                    IF(b.player_id IS NOT NULL,1,0) AS next_day_retention --玩家是否有下一天的留存，有标记为1，否则标记为0
+                FROM activity AS a
+                         LEFT JOIN activity AS b
+                                   ON a.player_id = b.player_id AND DATE_ADD(a.event_date,1) = b.event_date
+            ) c
+    ) d
+WHERE d.rn = 1
+GROUP BY
+    d.event_date
+;
