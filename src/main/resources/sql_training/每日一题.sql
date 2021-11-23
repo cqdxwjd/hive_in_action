@@ -782,3 +782,125 @@ WHERE d.rn = 1
 GROUP BY
     d.event_date
 ;
+
+--每日新用户统计【难度中等】
+CREATE TABLE traffic(
+                        user_id INT,
+                        activity STRING,
+                        activity_date DATE
+);
+
+INSERT INTO TABLE traffic VALUES
+    (1,'login','2019-05-01'),
+    (1,'homepage','2019-05-01'),
+    (1,'logout','2019-05-01'),
+    (2,'login','2019-06-21'),
+    (2,'logout','2019-06-21'),
+    (3,'login','2019-01-01'),
+    (3,'jobs','2019-01-01'),
+    (3,'logout','2019-01-01'),
+    (4,'login','2019-06-21'),
+    (4,'groups','2019-06-21'),
+    (4,'logout','2019-06-21'),
+    (5,'login','2019-03-01'),
+    (5,'logout','2019-03-01'),
+    (5,'login','2019-06-21'),
+    (5,'logout','2019-06-21')
+;
+
+-- 第一步：得到每个用户的首次登录时间
+SELECT
+    activity_date AS login_date,
+    ROW_NUMBER() OVER(PARTITION BY user_id ORDER BY activity_date ASC) AS rn
+FROM traffic
+WHERE activity = 'login'
+
+--第二步：得到每个用户在过去90天内的首次登录时间
+SELECT
+    a.login_date AS login_date
+FROM
+    (
+        SELECT
+            activity_date AS login_date,
+            ROW_NUMBER() OVER(PARTITION BY user_id ORDER BY activity_date ASC) AS rn
+        FROM traffic
+        WHERE activity = 'login'
+    ) a
+WHERE a.rn = 1
+  AND a.login_date BETWEEN DATE_SUB('2019-06-30',90) AND '2019-06-30'
+
+--第三步：根据日期分组计数等到过去90天某天首次登录的用户数
+SELECT
+    b.login_date AS login_date,
+    COUNT(*) AS user_count
+FROM
+    (
+        SELECT
+            a.login_date AS login_date
+        FROM
+            (
+                SELECT
+                    activity_date AS login_date,
+                    ROW_NUMBER() OVER(PARTITION BY user_id ORDER BY activity_date ASC) AS rn
+                FROM traffic
+                WHERE activity = 'login'
+            ) a
+        WHERE a.rn = 1
+          AND a.login_date BETWEEN DATE_SUB('2019-06-30',90) AND '2019-06-30'
+    ) b
+GROUP BY
+    b.login_date
+;
+
+--将当前时间用函数替换并简化SQL后，最终SQL如下
+SELECT
+    a.login_date AS login_date,
+    COUNT(*) AS user_count
+FROM
+    (
+        SELECT
+            activity_date AS login_date,
+            ROW_NUMBER() OVER(PARTITION BY user_id ORDER BY activity_date ASC) AS rn
+        FROM traffic
+        WHERE activity = 'login'
+    ) a
+WHERE a.rn = 1
+  AND a.login_date BETWEEN DATE_SUB(CURRENT_DATE(),90) AND CURRENT_DATE()
+GROUP BY
+    a.login_date
+;
+
+
+--每位学生的最高成绩【难度中等】
+CREATE TABLE enrollments(
+                            student_id INT,
+                            course_id INT,
+                            grade INT
+);
+
+INSERT INTO TABLE enrollments VALUES
+    (2,2,95),
+    (2,3,95),
+    (1,1,90),
+    (1,2,99),
+    (3,1,80),
+    (3,2,75),
+    (3,3,82)
+;
+
+SELECT
+    a.student_id AS student_id,
+    a.course_id AS course_id,
+    a.grade AS grade
+FROM
+    (
+        SELECT
+            student_id AS student_id,
+            course_id AS course_id,
+            grade AS grade,
+            ROW_NUMBER() OVER(PARTITION BY student_id ORDER BY grade DESC,course_id ASC) AS rn
+        FROM enrollments
+    ) a
+WHERE a.rn = 1
+ORDER BY student_id ASC
+;
