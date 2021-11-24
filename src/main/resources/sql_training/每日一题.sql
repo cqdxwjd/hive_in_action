@@ -970,3 +970,65 @@ SELECT
 FROM department
 GROUP BY id
 ;
+
+--Hive中生成日期维度表
+CREATE TABLE dim_date(
+                         day STRING COMMENT '日期,yyyy-MM-dd 格式',
+                         week BIGINT COMMENT '本周星期几,数值型,1-星期一,2-星期二,......,7-星期天',
+                         week_en STRING COMMENT '本周星期几英文名,文本型,Mon,Tue,Wed,Thu,Fri,Sat,Sun',
+                         week_of_year BIGINT COMMENT '本年第几周,数值型,1,2,3......',
+                         week_of_month BIGINT COMMENT '本月第几周,数值型,1,2,3......',
+                         day_of_year BIGINT COMMENT '本年第几天,数值型,1,2,3......',
+                         mon_dt STRING COMMENT '本周周一日期',
+                         tue_dt STRING COMMENT '本周周二日期',
+                         wed_dt STRING COMMENT '本周周三日期',
+                         thu_dt STRING COMMENT '本周周四日期',
+                         fri_dt STRING COMMENT '本周周五日期',
+                         sat_dt STRING COMMENT '本周周六日期',
+                         sun_dt STRING COMMENT '本周周日日期',
+                         year STRING COMMENT '本年',
+                         month STRING COMMENT '本月,yyyy-MM 格式',
+                         month_short BIGINT COMMENT '本月简写,MM格式1~12',
+                         first_day_of_month STRING COMMENT '本月第一天日期',
+                         last_day_of_month STRING COMMENT '本月最后一天日期',
+                         first_day_of_last_month STRING COMMENT '上月第一天日期',
+                         last_day_of_last_month STRING COMMENT '上月最后一天日期',
+                         quarter STRING COMMENT '本季度,yyyy-Q1/2/3/4 格式',
+                         quarter_short BIGINT COMMENT '本季度简写,数字型 1-4'
+);
+
+WITH dates AS
+         (
+             SELECT
+                 DATE_ADD("2021-01-01", a.pos) AS day
+FROM
+    (
+    SELECT POSEXPLODE(SPLIT(REPEAT("o", DATEDIFF("2030-12-31", "2021-01-01")), "o")) AS (pos,value)
+    ) a
+    )
+INSERT OVERWRITE TABLE dim_date
+SELECT
+    day AS day,--日期,yyyy-MM-dd 格式
+    DATE_FORMAT(day,'u') AS week,--本周星期几,数值型
+    DATE_FORMAT(day,'E') AS week_en,--本周星期几英文名,文本型
+    DATE_FORMAT(day,'w') AS week_of_year,--本年第几周,数值型,1,2,3......
+    DATE_FORMAT(day,'W') AS week_of_month,--本月第几周,数值型,1,2,3......
+    DATE_FORMAT(day,'D') AS day_of_year,--本年第几天,数值型,1,2,3......
+    DATE_ADD(day,1-CAST(DATE_FORMAT(day,'u') AS INT)) AS mon_dt,--本周周一日期
+    DATE_ADD(day,2-CAST(DATE_FORMAT(day,'u') AS INT)) AS tue_dt,--本周周二日期
+    DATE_ADD(day,3-CAST(DATE_FORMAT(day,'u') AS INT)) AS wed_dt,--本周周三日期
+    DATE_ADD(day,4-CAST(DATE_FORMAT(day,'u') AS INT)) AS thu_dt,--本周周四日期
+    DATE_ADD(day,5-CAST(DATE_FORMAT(day,'u') AS INT)) AS fri_dt,--本周周五日期
+    DATE_ADD(day,6-CAST(DATE_FORMAT(day,'u') AS INT)) AS sat_dt,--本周周六日期
+    DATE_ADD(day,7-CAST(DATE_FORMAT(day,'u') AS INT)) AS sun_dt,--本周周日日期
+    YEAR(day) AS year,--本年
+    DATE_FORMAT(day,'yyyy-MM') AS month,--本月
+    MONTH(day) AS month_short,--本月简写
+    TRUNC(day,'MM') AS first_day_of_month,--本月第一天日期
+    LAST_DAY(day) AS last_day_of_month,--本月最后一天日期
+    TRUNC(ADD_MONTHS(day,-1),'MM') AS first_day_of_last_month,--上月第一天日期
+    DATE_SUB(TRUNC(day,'MM'),1) AS last_day_of_last_month,--上月最后一天日期
+    CONCAT(YEAR(day),'-Q',QUARTER(day)) AS quarter,--本季度
+    QUARTER(day) AS quarter_short --本季度简写
+FROM dates
+;
