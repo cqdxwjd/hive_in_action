@@ -904,3 +904,69 @@ FROM
 WHERE a.rn = 1
 ORDER BY student_id ASC
 ;
+
+--报告的记录 I【难度简单】
+CREATE TABLE actions(
+                        user_id INT,
+                        post_id INT,
+                        action_date DATE,
+                        action STRING,
+                        extra STRING
+);
+
+INSERT INTO TABLE actions VALUES
+    (1,1,'2019-07-01','view',null),
+    (1,1,'2019-07-01','like',null),
+    (1,1,'2019-07-01','share',null),
+    (2,4,'2019-07-04','view',null),
+    (2,4,'2019-07-04','report','spam'),
+    (3,4,'2019-07-04','view',null),
+    (3,4,'2019-07-04','report','spam'),
+    (4,3,'2019-07-02','view',null),
+    (4,3,'2019-07-02','report','spam'),
+    (5,2,'2019-07-04','view',null),
+    (5,2,'2019-07-04','report','racism'),
+    (5,5,'2019-07-04','view',null),
+    (5,5,'2019-07-04','report','racism')
+;
+
+SELECT
+    extra AS report_reason,
+    COUNT(DISTINCT post_id) AS report_count
+FROM actions
+WHERE action = 'report' AND extra IS NOT NULL AND action_date = '2019-07-04'
+GROUP BY extra
+;
+
+--重新格式化部门表【难度中等】
+CREATE TABLE department(
+                           id INT,
+                           revenue INT,
+                           month STRING
+);
+
+INSERT OVERWRITE TABLE department VALUES
+    (1,8000,'Jan'),
+    (2,9000,'Jan'),
+    (3,10000,'Feb'),
+    (1,7000,'Feb'),
+    (1,6000,'Mar')
+;
+
+SELECT
+    id AS id,
+    SUM(IF(month = 'Jan',revenue,NULL)) AS Jan_Revenue,
+    SUM(IF(month = 'Feb',revenue,NULL)) AS Feb_Revenue,
+    SUM(IF(month = 'Mar',revenue,NULL)) AS Mar_Revenue,
+    SUM(IF(month = 'Apr',revenue,NULL)) AS Apr_Revenue,
+    SUM(IF(month = 'May',revenue,NULL)) AS May_Revenue,
+    SUM(IF(month = 'Jun',revenue,NULL)) AS Jun_Revenue,
+    SUM(IF(month = 'Jul',revenue,NULL)) AS Jul_Revenue,
+    SUM(IF(month = 'Aug',revenue,NULL)) AS Aug_Revenue,
+    SUM(IF(month = 'Sep',revenue,NULL)) AS Sep_Revenue,
+    SUM(IF(month = 'Oct',revenue,NULL)) AS Oct_Revenue,
+    SUM(IF(month = 'Nov',revenue,NULL)) AS Nov_Revenue,
+    SUM(IF(month = 'Dec',revenue,NULL)) AS Dec_Revenue
+FROM department
+GROUP BY id
+;
