@@ -1115,3 +1115,65 @@ FROM
 LATERAL VIEW POSEXPLODE(ARRAY(B.desktop_user,B.mobile_user,B.both_user)) D AS pos2,users
 WHERE C.pos1 = D.pos2
 ;
+
+--另一种解法，这种解法会漏掉当天既没有在desktop端也没有在mobile端购买的情况
+SELECT
+    B.spend_date,
+    B.platform,
+    B.amount,
+    COUNT(B.user_id) OVER (PARTITION BY spend_date,platform) AS total_users
+FROM
+    (
+        SELECT
+            DISTINCT
+            A.user_id,
+            A.spend_date,
+            CASE WHEN A.num = 1 AND A.platform = 'desktop' THEN 'desktop'
+                 WHEN A.num = 1 AND A.platform = 'mobile' THEN 'mobile'
+                 ELSE 'both' END AS platform,
+            A.amount
+        FROM
+            (
+                SELECT
+                    user_id,
+                    spend_date,
+                    platform,
+                    COUNT(*) OVER (PARTITION BY user_id,spend_date) AS num,
+                        SUM(amount) OVER (PARTITION BY user_id,spend_date) AS amount
+                FROM spending
+            ) A
+    ) B
+;
+
+--查询活跃业务【难度中等】
+CREATE TABLE events(
+                       business_id INT,
+                       event_type STRING,
+                       occurences INT
+);
+
+INSERT INTO TABLE events VALUES
+    (1,'reviews',7),
+    (3,'reviews',3),
+    (1,'ads',11),
+    (2,'ads',7),
+    (3,'ads',6),
+    (1,'page views',3),
+    (2,'page views',12)
+;
+
+SELECT
+    A.business_id AS business_id
+FROM
+    (
+        SELECT
+            *,
+            IF(SUM(occurences) OVER(PARTITION BY event_type)/COUNT(*) OVER(PARTITION BY event_type) < occurences,1,0) AS active
+        FROM events
+    ) A
+WHERE A.active = 1
+GROUP BY
+    A.business_id
+HAVING
+        COUNT(*) >=2
+;
