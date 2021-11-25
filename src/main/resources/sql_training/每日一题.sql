@@ -1032,3 +1032,86 @@ SELECT
     QUARTER(day) AS quarter_short --本季度简写
 FROM dates
 ;
+
+--用户购买平台【难度困难】
+CREATE TABLE spending(
+                         user_id INT,
+                         spend_date DATE,
+                         platform STRING,
+                         amount INT
+);
+
+INSERT INTO TABLE spending VALUES
+    (1,'2019-07-01','mobile',100),
+    (1,'2019-07-01','desktop',100),
+    (2,'2019-07-01','mobile',100),
+    (2,'2019-07-02','mobile',100),
+    (3,'2019-07-01','desktop',100),
+    (3,'2019-07-02','desktop',100)
+;
+
+--先根据用户和日期分组统计desktop端、mobile端和总的金额以及购买人数，总共6列，然后使用Hive带指针的explode函数进行列转行
+SELECT
+    B.spend_date AS spend_date,
+    CASE C.pos1 WHEN 0 THEN 'desktop'
+                WHEN 1 THEN 'mobile'
+                WHEN 2 THEN 'both'
+                ELSE NULL END AS platform,
+    C.amount AS total_amount,
+    D.users AS total_users
+FROM
+    (
+        SELECT
+            A.spend_date AS spend_date,
+            SUM(A.desktop) AS desktop,
+            SUM(A.mobile) AS mobile,
+            SUM(A.both_platform) AS both_platform,
+            SUM(A.desktop_user) AS desktop_user,
+            SUM(A.mobile_user) AS mobile_user,
+            SUM(A.both_user) AS both_user
+        FROM
+            (
+                SELECT
+                    user_id AS user_id,
+                    spend_date AS spend_date,
+                    IF(
+                            SUM(IF(platform = 'desktop',amount,0)) != 0 AND SUM(IF(platform = 'mobile',amount,0)) !=0,
+                            0,
+                            SUM(IF(platform = 'desktop',amount,0))
+                        ) AS desktop,
+                    IF(
+                            SUM(IF(platform = 'desktop',amount,0)) != 0 AND SUM(IF(platform = 'mobile',amount,0)) !=0,
+                            0,
+                            SUM(IF(platform = 'mobile',amount,0))
+                        ) AS mobile,
+                    IF(
+                            SUM(IF(platform = 'desktop',amount,0)) != 0 AND SUM(IF(platform = 'mobile',amount,0)) !=0,
+                            SUM(amount),
+                            0
+                        ) AS both_platform,
+                    IF(
+                            SUM(IF(platform = 'desktop',amount,0)) != 0 AND SUM(IF(platform = 'mobile',amount,0)) !=0,
+                            0,
+                            SUM(IF(platform = 'desktop',1,0))
+                        ) AS desktop_user,
+                    IF(
+                            SUM(IF(platform = 'desktop',amount,0)) != 0 AND SUM(IF(platform = 'mobile',amount,0)) !=0,
+                            0,
+                            SUM(IF(platform = 'mobile',1,0))
+                        ) AS mobile_user,
+                    IF(
+                            SUM(IF(platform = 'desktop',amount,0)) != 0 AND SUM(IF(platform = 'mobile',amount,0)) !=0,
+                            1,
+                            0
+                        ) AS both_user
+                FROM spending
+                GROUP BY
+                    user_id,
+                    spend_date
+            ) A
+        GROUP BY A.spend_date
+    ) B
+    LATERAL VIEW POSEXPLODE(ARRAY(B.desktop,B.mobile,B.both_platform)) C AS pos1,amount
+LATERAL VIEW POSEXPLODE(ARRAY(B.desktop_user,B.mobile_user,B.both_user)) D AS pos2,users
+WHERE C.pos1 = D.pos2
+;
