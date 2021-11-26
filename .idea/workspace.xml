@@ -216,7 +216,8 @@
       <workItem from="1637719113497" duration="710000" />
       <workItem from="1637748958073" duration="55000" />
       <workItem from="1637808388058" duration="4258000" />
-      <workItem from="1637835468552" duration="804000" />
+      <workItem from="1637835468552" duration="832000" />
+      <workItem from="1637889933334" duration="951000" />
     </task>
     <task id="LOCAL-00001" summary="sql打卡 20211109">
       <created>1636424450922</created>
@@ -302,7 +303,14 @@
       <option name="project" value="LOCAL" />
       <updated>1637818542436</updated>
     </task>
-    <option name="localTasksCounter" value="13" />
+    <task id="LOCAL-00013" summary="sql打卡 20211125 每日一题2">
+      <created>1637836991620</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1637836991620</updated>
+    </task>
+    <option name="localTasksCounter" value="14" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
@@ -376,7 +384,8 @@
     <MESSAGE value="sql打卡 20211124 每日一题" />
     <MESSAGE value="20211124 Hive中生成日期维度表" />
     <MESSAGE value="sql打卡 20211125 每日一题" />
-    <option name="LAST_COMMIT_MESSAGE" value="sql打卡 20211125 每日一题" />
+    <MESSAGE value="sql打卡 20211125 每日一题2" />
+    <option name="LAST_COMMIT_MESSAGE" value="sql打卡 20211125 每日一题2" />
   </component>
   <component name="editorHistoryManager">
     <entry file="jar://$MAVEN_REPOSITORY$/org/apache/hive/hive-common/1.1.1/hive-common-1.1.1-sources.jar!/org/apache/hadoop/hive/common/CompressionUtils.java" />

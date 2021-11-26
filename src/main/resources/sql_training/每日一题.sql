@@ -1177,3 +1177,155 @@ GROUP BY
 HAVING
         COUNT(*) >=2
 ;
+
+--报告的记录 II【难度中等】
+CREATE TABLE actions(
+                        user_id INT,
+                        post_id INT,
+                        action_date DATE,
+                        action STRING,
+                        extra STRING
+);
+
+INSERT OVERWRITE TABLE actions VALUES
+    (1,1,'2019-07-01','view',NULL),
+    (1,1,'2019-07-01','like',NULL),
+    (1,1,'2019-07-01','share',NULL),
+    (2,2,'2019-07-04','view',NULL),
+    (2,2,'2019-07-04','report','spam'),
+    (3,4,'2019-07-04','view',NULL),
+    (3,4,'2019-07-04','report','spam'),
+    (4,3,'2019-07-02','view',NULL),
+    (4,3,'2019-07-02','report','spam'),
+    (5,2,'2019-07-03','view',NULL),
+    (5,2,'2019-07-03','report','racism'),
+    (5,5,'2019-07-03','view',NULL),
+    (5,5,'2019-07-03','report','racism')
+;
+
+CREATE TABLE removals(
+                         post_id INT,
+                         remove_date DATE
+);
+
+INSERT OVERWRITE TABLE removals VALUES
+    (2,'2019-07-20'),
+    (3,'2019-07-18')
+;
+
+--求在被报告为垃圾广告的帖子中，被移除的帖子的每日平均占比，四舍五入到小数点后 2 位。
+
+-- Result table:
+-- +-----------------------+
+-- | average_daily_percent |
+-- +-----------------------+
+-- | 75.00                 |
+-- +-----------------------+
+-- 2019-07-04 的垃圾广告移除率是 50%，因为有两张帖子被报告为垃圾广告，但只有一个得到移除。
+-- 2019-07-02 的垃圾广告移除率是 100%，因为有一张帖子被举报为垃圾广告并得到移除。
+-- 其余几天没有收到垃圾广告的举报，因此平均值为：(50 + 100) / 2 = 75%
+-- 注意，输出仅需要一个平均值即可，我们并不关注移除操作的日期。
+
+SELECT
+    ROUND(100*SUM(C.remove_rate)/COUNT(*),2) AS average_daily_percent
+FROM
+    (
+        SELECT
+            A.action_date AS action_date,
+            COUNT(B.post_id)/COUNT(*) AS remove_rate
+        FROM
+            (
+                SELECT
+                    DISTINCT
+                    post_id,
+                    action_date
+                FROM actions
+                WHERE action = 'report' AND extra = 'spam'
+            ) A
+                LEFT JOIN removals B
+                          ON A.post_id = B.post_id
+        GROUP BY A.action_date
+    ) C
+;
+
+--市场分析 II【难度困难】
+CREATE TABLE users(
+                      user_id INT,
+                      join_date DATE,
+                      favorite_brand STRING
+);
+
+CREATE TABLE orders(
+                       order_id INT,
+                       order_date DATE,
+                       item_id INT,
+                       buyer_id INT,
+                       seller_id INT
+);
+
+CREATE TABLE items(
+                      item_id INT,
+                      item_brand STRING
+);
+
+INSERT OVERWRITE TABLE users VALUES
+    (1,'2019-01-01','Lenovo'),
+    (2,'2019-02-09','Samsung'),
+    (3,'2019-01-19','LG'),
+    (4,'2019-05-21','HP')
+;
+
+INSERT OVERWRITE TABLE orders VALUES
+    (1,'2019-08-01',4,1,2),
+    (2,'2019-08-02',2,1,3),
+    (3,'2019-08-03',3,2,3),
+    (4,'2019-08-04',1,4,2),
+    (5,'2019-08-04',1,3,4),
+    (6,'2019-08-05',2,2,4)
+;
+
+INSERT OVERWRITE TABLE items VALUES
+    (1,'Samsung'),
+    (2,'Lenovo'),
+    (3,'LG'),
+    (4,'HP')
+;
+
+-- 写一个 SQL 查询确定每一个用户按日期顺序卖出的第二件商品的品牌是否是他们最喜爱的品牌。如果一个用户卖出少于两件商品，查询的结果是 no 。
+
+-- 题目保证没有一个用户在一天中卖出超过一件商品
+
+-- Result table:
+-- +-----------+--------------------+
+-- | seller_id | 2nd_item_fav_brand |
+-- +-----------+--------------------+
+-- | 1         | no                 |
+-- | 2         | yes                |
+-- | 3         | yes                |
+-- | 4         | no                 |
+-- +-----------+--------------------+
+
+-- id 为 1 的用户的查询结果是 no，因为他什么也没有卖出
+-- id为 2 和 3 的用户的查询结果是 yes，因为他们卖出的第二件商品的品牌是他们自己最喜爱的品牌
+-- id为 4 的用户的查询结果是 no，因为他卖出的第二件商品的品牌不是他最喜爱的品牌
+
+SELECT
+    D.user_id AS seller_id,
+    IF(SUM(IF(D.rn = 1,0,IF(D.favorite_brand = D.item_brand,1,0))) = 1,'yes','no') AS 2nd_item_fav_brand
+FROM
+    (
+        SELECT
+            A.user_id,
+            B.order_date,
+            A.favorite_brand,
+            C.item_brand,
+            ROW_NUMBER() OVER(PARTITION BY A.user_id ORDER BY B.order_date) AS rn
+        FROM users A
+                 LEFT JOIN orders B
+                           ON A.user_id = B.seller_id
+                 LEFT JOIN items C
+                           ON B.item_id = C.item_id
+    ) D
+WHERE D.rn <=2
+GROUP BY D.user_id
+;
