@@ -1329,3 +1329,85 @@ FROM
 WHERE D.rn <=2
 GROUP BY D.user_id
 ;
+
+--文章浏览 I【难度简单】
+CREATE TABLE views(
+                      article_id INT,
+                      author_id INT,
+                      viewer_id INT,
+                      view_date DATE
+);
+
+INSERT OVERWRITE TABLE views VALUES
+(1,3,5,'2019-08-01'),
+(1,3,6,'2019-08-02'),
+(2,7,7,'2019-08-01'),
+(2,7,6,'2019-08-02'),
+(4,7,1,'2019-07-22'),
+(3,4,4,'2019-07-21'),
+(3,4,4,'2019-07-21')
+;
+
+-- 结果表：
+-- +------+
+-- | id   |
+-- +------+
+-- | 4    |
+-- | 7    |
+-- +------+
+
+SELECT
+    DISTINCT
+    author_id AS id
+FROM views
+WHERE author_id = viewer_id
+ORDER BY author_id ASC
+;
+
+SELECT
+    author_id AS id
+FROM views
+WHERE author_id = viewer_id
+GROUP BY author_id
+ORDER BY author_id ASC
+;
+
+
+--文章浏览 II【难度中等】
+CREATE TABLE views(
+                      article_id INT,
+                      author_id INT,
+                      viewer_id INT,
+                      view_date DATE
+);
+
+INSERT OVERWRITE TABLE views VALUES
+(1,3,5,'2019-08-01'),
+(3,4,5,'2019-08-01'),
+(1,3,6,'2019-08-02'),
+(2,7,7,'2019-08-01'),
+(2,7,6,'2019-08-02'),
+(4,7,1,'2019-07-22'),
+(3,4,4,'2019-07-21'),
+(3,4,4,'2019-07-21')
+;
+
+-- Result table:
+-- +------+
+-- | id   |
+-- +------+
+-- | 5    |
+-- | 6    |
+-- +------+
+
+--编写一条 SQL 查询来找出在同一天阅读至少两篇文章的人，结果按照 id 升序排序。
+
+SELECT
+    viewer_id AS id
+FROM views
+GROUP BY
+    view_date,
+    viewer_id
+HAVING COUNT(DISTINCT article_id) >= 2
+ORDER BY viewer_id ASC
+;
