@@ -1411,3 +1411,142 @@ GROUP BY
 HAVING COUNT(DISTINCT article_id) >= 2
 ORDER BY viewer_id ASC
 ;
+
+--即时食物配送 I【难度简单】
+CREATE TABLE delivery(
+                         delivery_id INT,
+                         customer_id INT,
+                         order_date DATE,
+                         customer_pref_delivery_date DATE
+);
+
+INSERT OVERWRITE TABLE delivery VALUES
+(1,1,'2019-08-01','2019-08-02'),
+(2,5,'2019-08-02','2019-08-02'),
+(3,1,'2019-08-11','2019-08-11'),
+(4,3,'2019-08-24','2019-08-26'),
+(5,4,'2019-08-21','2019-08-22'),
+(6,2,'2019-08-11','2019-08-13')
+;
+
+-- Result 表:
+-- +----------------------+
+-- | immediate_percentage |
+-- +----------------------+
+-- | 33.33                |
+-- +----------------------+
+-- 2 和 3 号订单为即时订单，其他的为计划订单。
+
+SELECT
+    ROUND(100*SUM(IF(order_date = customer_pref_delivery_date,1,0))/COUNT(*),2) AS immediate_percentage
+FROM delivery
+;
+
+--即时食物配送 II【难度中等】
+CREATE TABLE IF NOT EXISTS delivery(
+                                       delivery_id INT,
+                                       customer_id INT,
+                                       order_date DATE,
+                                       customer_pref_delivery_date DATE
+);
+
+INSERT OVERWRITE TABLE delivery VALUES
+(1,1,'2019-08-01','2019-08-02'),
+(2,2,'2019-08-02','2019-08-02'),
+(3,1,'2019-08-11','2019-08-12'),
+(4,3,'2019-08-24','2019-08-24'),
+(5,3,'2019-08-21','2019-08-22'),
+(6,2,'2019-08-11','2019-08-13'),
+(7,4,'2019-08-09','2019-08-09')
+;
+
+-- Result 表：
+-- +----------------------+
+-- | immediate_percentage |
+-- +----------------------+
+-- | 50.00                |
+-- +----------------------+
+-- 1 号顾客的 1 号订单是首次订单，并且是计划订单。
+-- 2 号顾客的 2 号订单是首次订单，并且是即时订单。
+-- 3 号顾客的 5 号订单是首次订单，并且是计划订单。
+-- 4 号顾客的 7 号订单是首次订单，并且是即时订单。
+-- 因此，一半顾客的首次订单是即时的。
+
+SELECT
+    ROUND(100*SUM(IF(A.order_date = A.customer_pref_delivery_date AND A.order_date = A.first_order_date,1,0))/SUM(IF(A.order_date = A.first_order_date,1,0)),2) AS immediate_percentage
+FROM
+    (
+        SELECT
+            customer_id,
+            order_date,
+            customer_pref_delivery_date,
+            MIN(order_date) OVER(PARTITION BY customer_id) AS first_order_date
+        FROM delivery
+    ) A
+;
+
+
+--最后一个能进入电梯的人【难度中等】
+CREATE TABLE IF NOT EXISTS queue(
+                                    person_id INT,
+                                    person_name STRING,
+                                    weight INT,
+                                    turn INT
+);
+
+INSERT OVERWRITE TABLE queue VALUES
+(5,'George Washington',250,1),
+(3,'John Adams',350,2),
+(6,'Thomas Jefferson',400,3),
+(2,'Will Johnliams',200,4),
+(4,'Thomas Jefferson',175,5),
+(1,'James Elephant',500,6)
+;
+
+SELECT
+    B.person_name
+FROM
+    (
+        SELECT
+            A.person_name,
+            A.total_weight
+        FROM
+            (
+                SELECT
+                    *,
+                    SUM(weight) OVER(ORDER BY turn) AS total_weight
+                FROM queue
+            ) A
+        WHERE A.total_weight <= 1000
+        ORDER by A.total_weight DESC
+    ) B
+    LIMIT 1
+;
+
+--行转列【难度中等】
+CREATE TABLE IF NOT EXISTS amount(
+                                     year INT,
+                                     month INT,
+                                     amount DOUBLE
+);
+
+INSERT OVERWRITE TABLE amount VALUES
+(1991,1,1.1),
+(1991,2,1.2),
+(1991,3,1.3),
+(1991,4,1.4),
+(1992,1,2.1),
+(1992,2,2.2),
+(1992,3,2.3),
+(1992,4,2.4)
+;
+
+SELECT
+    year AS year,
+    SUM(IF(month = 1,amount,0)) AS m1,
+    SUM(IF(month = 2,amount,0)) AS m2,
+    SUM(IF(month = 3,amount,0)) AS m3,
+    SUM(IF(month = 4,amount,0)) AS m4
+FROM amount
+GROUP BY year
+;

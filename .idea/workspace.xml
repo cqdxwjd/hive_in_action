@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="5a5f4b0a-63bc-4b71-9709-c3626f098dfc" name="Default Changelist" comment="">
+    <list default="true" id="5a5f4b0a-63bc-4b71-9709-c3626f098dfc" name="Default Changelist" comment="sql打卡 20211129 每日一题">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/resources/sql_training/每日一题.sql" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/sql_training/每日一题.sql" afterDir="false" />
     </list>
@@ -218,7 +218,9 @@
       <workItem from="1637808388058" duration="4258000" />
       <workItem from="1637835468552" duration="832000" />
       <workItem from="1637889933334" duration="970000" />
-      <workItem from="1638148272849" duration="8000" />
+      <workItem from="1638148272849" duration="31000" />
+      <workItem from="1638176978361" duration="496000" />
+      <workItem from="1638323220485" duration="1233000" />
     </task>
     <task id="LOCAL-00001" summary="sql打卡 20211109">
       <created>1636424450922</created>
@@ -318,7 +320,14 @@
       <option name="project" value="LOCAL" />
       <updated>1637896313744</updated>
     </task>
-    <option name="localTasksCounter" value="15" />
+    <task id="LOCAL-00015" summary="sql打卡 20211129 每日一题">
+      <created>1638148293597</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1638148293597</updated>
+    </task>
+    <option name="localTasksCounter" value="16" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
@@ -394,7 +403,8 @@
     <MESSAGE value="sql打卡 20211125 每日一题" />
     <MESSAGE value="sql打卡 20211125 每日一题2" />
     <MESSAGE value="sql打卡 20211126 每日一题" />
-    <option name="LAST_COMMIT_MESSAGE" value="sql打卡 20211126 每日一题" />
+    <MESSAGE value="sql打卡 20211129 每日一题" />
+    <option name="LAST_COMMIT_MESSAGE" value="sql打卡 20211129 每日一题" />
   </component>
   <component name="editorHistoryManager">
     <entry file="jar://$MAVEN_REPOSITORY$/org/apache/hive/hive-common/1.1.1/hive-common-1.1.1-sources.jar!/org/apache/hadoop/hive/common/CompressionUtils.java" />
