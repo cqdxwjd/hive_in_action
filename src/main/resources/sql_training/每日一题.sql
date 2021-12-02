@@ -1550,3 +1550,821 @@ SELECT
 FROM amount
 GROUP BY year
 ;
+
+DROP TABLE IF EXISTS student;
+CREATE TABLE IF NOT EXISTS student(
+                                      sid STRING,
+                                      sname STRING,
+                                      sage DATE,
+                                      ssex STRING
+);
+
+INSERT OVERWRITE TABLE student VALUES
+('01' , '西红柿' , '1990-01-01' , '男')
+,('02' , '钱电' , '1990-12-21' , '男')
+,('03' , '孙风' , '1990-12-20' , '男')
+,('04' , '李云' , '1990-12-06' , '男')
+,('05' , '周梅' , '1991-12-01' , '女')
+,('06' , '吴兰' , '1992-01-01' , '女')
+,('07' , '郑竹' , '1989-01-01' , '女')
+,('09' , '张三' , '2017-12-20' , '女')
+,('10' , '西红柿' , '2017-12-25' , '女')
+,('11' , '李四' , '2012-06-06' , '女')
+,('12' , '赵六' , '2013-06-13' , '女')
+,('13' , '孙七' , '2014-06-01' , '女')
+;
+
+DROP TABLE IF EXISTS course;
+CREATE TABLE IF NOT EXISTS course(
+                                     cid STRING,
+                                     cname STRING,
+                                     tid STRING
+);
+
+INSERT OVERWRITE TABLE course VALUES
+('01' , '语文' , '02')
+,('02' , '数学' , '01')
+,('03' , '英语' , '03')
+;
+
+DROP TABLE IF EXISTS teacher;
+CREATE TABLE IF NOT EXISTS teacher(
+                                      tid STRING,
+                                      tname STRING
+);
+
+INSERT OVERWRITE TABLE teacher VALUES
+('01' , '张三')
+,('02' , '李四')
+,('03' , '王五')
+,('04' , '西红柿')
+;
+
+DROP TABLE IF EXISTS grade;
+CREATE TABLE IF NOT EXISTS grade(
+                                    sid STRING,
+                                    cid STRING,
+                                    score DOUBLE
+);
+
+INSERT OVERWRITE TABLE grade VALUES
+('08' , '03' , 95)
+,('08' , '03' , 94)
+,('01' , '01' , 80)
+,('01' , '02' , 90)
+,('01' , '03' , 99)
+,('02' , '01' , 70)
+,('02' , '02' , 60)
+,('02' , '03' , 80)
+,('03' , '01' , 80)
+,('03' , '02' , 80)
+,('03' , '03' , 80)
+,('04' , '01' , 50)
+,('04' , '02' , 30)
+,('04' , '03' , 20)
+,('05' , '01' , 76)
+,('05' , '02' , 87)
+,('06' , '01' , 31)
+,('06' , '03' , 34)
+,('07' , '02' , 89)
+,('07' , '03' , 98)
+;
+
+--1.查询" 01 "课程比" 02 "课程成绩高的学生的信息及课程分数
+SELECT
+    C.sid AS sid,
+    C.sname AS sname,
+    C.sage AS sage,
+    C.ssex AS ssex,
+    SUM(IF(B.cid = '01',B.score,0)) AS score_01, --01课程成绩
+    SUM(IF(B.cid = '02',B.score,0)) AS score_02 --02课程成绩
+FROM
+    (
+        SELECT
+            cid,
+            cname
+        FROM course
+        WHERE cid = '01' or cid = '02'
+    ) A
+        LEFT JOIN
+    (
+        SELECT
+            sid,
+            cid,
+            score
+        FROM grade
+        WHERE cid = '01' or cid = '02'
+    ) B ON A.cid = B.cid
+        LEFT JOIN student C ON B.sid = C.sid
+GROUP BY
+    C.sid,
+    C.sname,
+    C.sage,
+    C.ssex
+HAVING score_01 > score_02
+;
+
+-- OUTPUT:
+-- sid     sname   sage    ssex    score_01        score_02
+-- 02      钱电    1990-12-21      男      70.0    60.0
+-- 04      李云    1990-12-06      男      50.0    30.0
+-- 06      吴兰    1992-01-01      女      31.0    0.0
+
+--2.查询平均成绩大于等于 60 分的同学的学生编号和学生姓名和平均成绩
+SELECT
+    B.sid AS sid,
+    B.sname AS sname,
+    ROUND(A.avg_score,2) AS avg_score
+FROM
+    (
+        SELECT
+            sid AS sid,
+            AVG(score) AS avg_score
+        FROM grade
+        GROUP BY sid
+        HAVING avg_score >= 60
+    ) A
+        LEFT JOIN student B
+                  ON A.sid = B.sid
+WHERE B.sid IS NOT NULL
+;
+
+-- OUTPUT:
+-- sid     sname   avg_score
+-- 01      西红柿  89.67
+-- 02      钱电    70.0
+-- 03      孙风    80.0
+-- 05      周梅    81.5
+-- 07      郑竹    93.5
+
+--3.查询所有同学的学生编号、学生姓名、选课总数、所有课程的总成绩(没成绩的显示为 NULL )
+SELECT
+    A.sid AS sid,
+    A.sname AS sname,
+    COUNT(B.cid) AS course_num,
+    SUM(B.score) AS total_score
+FROM student A
+         LEFT JOIN grade B
+                   ON A.sid = B.sid
+GROUP BY
+    A.sid,
+    A.sname
+;
+
+--OUTPUT:
+-- sid     sname   course_num      total_score
+-- 01      西红柿  3       269.0
+-- 02      钱电    3       210.0
+-- 03      孙风    3       240.0
+-- 04      李云    3       100.0
+-- 05      周梅    2       163.0
+-- 06      吴兰    2       65.0
+-- 07      郑竹    2       187.0
+-- 09      张三    0       NULL
+-- 10      西红柿  0       NULL
+-- 11      李四    0       NULL
+-- 12      赵六    0       NULL
+-- 13      孙七    0       NULL
+
+--4.查询学过「张三」老师授课的同学的信息
+SELECT
+    D.sid AS sid,
+    D.sname AS sname,
+    D.sage AS sage,
+    D.ssex AS ssex
+FROM
+    (
+        SELECT
+            tid
+        FROM teacher
+        WHERE tname = '张三'
+    ) A
+        LEFT JOIN course B ON A.tid = B.tid
+        LEFT JOIN grade C ON B.cid = C.cid
+        LEFT JOIN student D ON C.sid = D.sid
+;
+
+--OUTPUT:
+-- sid     sname   sage    ssex
+-- 01      西红柿  1990-01-01      男
+-- 02      钱电    1990-12-21      男
+-- 03      孙风    1990-12-20      男
+-- 04      李云    1990-12-06      男
+-- 05      周梅    1991-12-01      女
+-- 07      郑竹    1989-01-01      女
+
+--5.查询没有学全所有课程的同学的信息
+SELECT
+    D.sid AS sid,
+    D.sname AS sname,
+    D.sage AS sage,
+    D.ssex AS ssex
+FROM
+    (
+        SELECT
+            A.sid AS sid
+        FROM
+            (
+                SELECT
+                    sid AS sid,
+                    COUNT(DISTINCT cid) AS course_num
+                FROM grade
+                GROUP BY sid
+            ) A
+                LEFT JOIN
+            (
+                SELECT
+                    COUNT(DISTINCT cid) AS course_num
+                FROM course
+            ) B ON A.course_num = B.course_num
+        WHERE B.course_num IS NULL
+    ) C
+        LEFT JOIN student D ON C.sid = D.sid
+WHERE D.sid IS NOT NULL
+;
+
+--OUTPUT:
+-- sid     sname   sage    ssex
+-- 05      周梅    1991-12-01      女
+-- 06      吴兰    1992-01-01      女
+-- 07      郑竹    1989-01-01      女
+
+--6.查询和" 01 "号的同学学习的课程 完全相同的其他同学的信息
+WITH TMP AS
+         (
+             SELECT
+                 sid AS sid,
+                 COLLECT_SET(cid) AS course_set
+             FROM grade
+             GROUP BY sid
+         )
+SELECT
+    D.sid AS sid,
+    D.sname AS sname,
+    D.sage AS sage,
+    D.ssex AS ssex
+FROM
+    (
+        SELECT
+            B.sid as sid
+        FROM TMP A
+                 LEFT JOIN TMP B ON A.course_set = B.course_set
+        WHERE A.sid = '01' AND B.sid != '01'
+    ) C
+        LEFT JOIN student D on C.sid = D.sid
+;
+
+--OUTPUT:
+-- sid     sname   sage    ssex
+-- 02      钱电    1990-12-21      男
+-- 03      孙风    1990-12-20      男
+-- 04      李云    1990-12-06      男
+
+--7.查询两门及其以上不及格课程的同学的学号，姓名及其平均成绩
+SELECT
+    B.sid AS sid,
+    B.sname AS sname,
+    A.avg_score
+FROM
+    (
+        SELECT
+            sid AS sid,
+            SUM(IF(score < 60,1,0)) AS fail_course_num,
+            ROUND(SUM(score)/COUNT(cid),2) AS avg_score
+        FROM grade
+        GROUP BY sid
+        HAVING fail_course_num >= 2
+    ) A
+        LEFT JOIN student B ON A.sid = B.sid
+;
+
+--OUTPUT:
+-- sid     sname   a.avg_score
+-- 04      李云    33.33
+-- 06      吴兰    32.5
+
+--8.检索" 01 "课程分数小于 60，按分数降序排列的学生信息
+SELECT
+    B.sid AS sid,
+    B.sname AS sname,
+    B.sage AS sage,
+    B.ssex AS ssex
+FROM
+    (
+        SELECT
+            sid,
+            score
+        FROM grade
+        WHERE cid = '01' AND score < 60
+        ORDER BY score DESC
+    ) A
+        LEFT JOIN student B ON A.sid = B.sid
+;
+
+--OUTPUT:
+-- 04      李云    1990-12-06      男
+-- 06      吴兰    1992-01-01      女
+
+--9.按平均成绩从高到低显示所有学生的所有课程的成绩以及平均成绩
+SELECT
+    *,
+    ROUND(AVG(score) OVER(PARTITION BY sid),2) AS avg_score
+FROM grade
+ORDER BY avg_score DESC
+;
+
+-- --OUTPUT:
+-- grade.sid       grade.cid       grade.score     avg_score
+-- 08      03      95.0    94.5
+-- 08      03      94.0    94.5
+-- 07      02      89.0    93.5
+-- 07      03      98.0    93.5
+-- 01      03      99.0    89.67
+-- 01      02      90.0    89.67
+-- 01      01      80.0    89.67
+-- 05      01      76.0    81.5
+-- 05      02      87.0    81.5
+-- 03      01      80.0    80.0
+-- 03      02      80.0    80.0
+-- 03      03      80.0    80.0
+-- 02      02      60.0    70.0
+-- 02      03      80.0    70.0
+-- 02      01      70.0    70.0
+-- 04      02      30.0    33.33
+-- 04      03      20.0    33.33
+-- 04      01      50.0    33.33
+-- 06      03      34.0    32.5
+-- 06      01      31.0    32.5
+
+--10.查询各科成绩最高分、最低分和平均分：
+-- 以如下形式显示：课程 ID，课程 name，最高分，最低分，平均分，及格率，中等率，优良率，优秀率
+-- 及格为>=60，中等为：70-80，优良为：80-90，优秀为：>=90
+-- 要求输出课程号和选修人数，查询结果按人数降序排列，若人数相同，按课程号升序排列
+SELECT
+    DISTINCT
+    cid AS cid,
+    COUNT(DISTINCT sid) OVER(PARTITION BY cid) AS select_num,
+        ROUND(MAX(score) OVER(PARTITION BY cid),2) AS max_score,
+    ROUND(MIN(score) OVER(PARTITION BY cid),2) AS min_score,
+    ROUND(AVG(score) OVER(PARTITION BY cid),2) AS avg_score,
+    ROUND(SUM(IF(score >= 60,1,0)) OVER(PARTITION BY cid)/COUNT(*) OVER(PARTITION BY cid),2) AS pass_rate,
+    ROUND(SUM(IF(score >= 70 AND score < 80,1,0)) OVER(PARTITION BY cid)/COUNT(*) OVER(PARTITION BY cid),2) AS mid_rate,
+    ROUND(SUM(IF(score >= 80 AND score < 90,1,0)) OVER(PARTITION BY cid)/COUNT(*) OVER(PARTITION BY cid),2) AS good_rate,
+    ROUND(SUM(IF(score >= 90,1,0)) OVER(PARTITION BY cid)/COUNT(*) OVER(PARTITION BY cid),2) AS excellent_rate
+FROM grade
+ORDER BY select_num DESC,cid ASC
+;
+
+--OUTPUT:
+-- cid     select_num      max_score       min_score       avg_score       pass_rate       mid_rate        good_rate       excellent_rate
+-- 03      7       99.0    20.0    75.0    0.75    0.0     0.25    0.5
+-- 01      6       80.0    31.0    64.5    0.67    0.33    0.33    0.0
+-- 02      6       90.0    30.0    72.67   0.83    0.0     0.5     0.17
+
+-- 11.按各科成绩进行排序，并显示排名， Score 重复时保留名次空缺
+SELECT
+    cid AS cid,
+    score AS score,
+    RANK() OVER(PARTITION BY cid ORDER BY score) AS rank
+FROM grade
+;
+
+--OUTPUT:
+-- cid     score   rank
+-- 01      31.0    1
+-- 01      50.0    2
+-- 01      70.0    3
+-- 01      76.0    4
+-- 01      80.0    5
+-- 01      80.0    5
+-- 02      30.0    1
+-- 02      60.0    2
+-- 02      80.0    3
+-- 02      87.0    4
+-- 02      89.0    5
+-- 02      90.0    6
+-- 03      20.0    1
+-- 03      34.0    2
+-- 03      80.0    3
+-- 03      80.0    3
+-- 03      94.0    5
+-- 03      95.0    6
+-- 03      98.0    7
+-- 03      99.0    8
+
+-- 12.统计各科成绩各分数段人数：课程编号，课程名称，[100-85]，[85-70]，[70-60]，[60-0] 及所占百分比
+-- 跟第10题相同
+
+-- 13.查询各科成绩前三名的记录
+SELECT
+    sid AS sid,
+    cid AS cid,
+    score AS score
+FROM
+    (
+        SELECT
+            *,
+            RANK() OVER(PARTITION BY cid ORDER BY score DESC) AS rank
+        FROM grade
+    ) A
+WHERE A.rank <= 3
+;
+
+--OUTPUT:
+-- sid     cid     score
+-- 03      01      80.0
+-- 01      01      80.0
+-- 05      01      76.0
+-- 01      02      90.0
+-- 07      02      89.0
+-- 05      02      87.0
+-- 01      03      99.0
+-- 07      03      98.0
+-- 08      03      95.0
+
+-- 14.查询每门课程被选修的学生数
+SELECT
+    DISTINCT
+    cid AS cid,
+    COUNT(DISTINCT sid) OVER(PARTITION BY cid) AS select_num
+FROM grade
+;
+
+--OUTPUT:
+-- cid     select_num
+-- 01      6
+-- 02      6
+-- 03      7
+
+-- 15.查询出只选修两门课程的学生学号和姓名
+SELECT
+    A.sid AS sid,
+    B.sname AS sname
+FROM
+    (
+        SELECT
+            DISTINCT
+            sid AS sid,
+            COUNT(DISTINCT cid) OVER(PARTITION BY sid) AS select_num
+        FROM grade
+    ) A
+        LEFT JOIN student B ON A.sid = B.sid
+WHERE A.select_num = 2
+;
+
+--OUTPUT:
+-- sid     sname
+-- 05      周梅
+-- 06      吴兰
+-- 07      郑竹
+
+-- 16.查询同名同性学生名单，并统计同名人数
+SELECT
+    sname AS sname,
+    ssex AS ssex,
+    COUNT(*) AS same_num
+FROM student
+GROUP BY sname,ssex
+HAVING same_num >= 2
+;
+
+--OUTPUT:
+-- sname   ssex    same_num
+-- 没有同名同性的
+
+-- 17.查询每门课程的平均成绩，结果按平均成绩降序排列，平均成绩相同时，按课程编号升序排列
+SELECT
+    DISTINCT
+    cid AS cid,
+    ROUND(AVG(score) OVER(PARTITION BY cid),2) AS avg_score
+FROM grade
+ORDER BY avg_score DESC,cid ASC
+;
+
+--OUTPUT:
+-- cid     avg_score
+-- 03      75.0
+-- 02      72.67
+-- 01      64.5
+
+-- 18.查询平均成绩大于等于 85 的所有学生的学号、姓名和平均成绩
+SELECT
+    A.sid AS sid,
+    B.sname AS sname,
+    ROUND(A.avg_score,2) AS avg_score
+FROM
+    (
+        SELECT
+            DISTINCT
+            sid AS sid,
+            AVG(score) OVER(PARTITION BY sid) AS avg_score
+        FROM grade
+    ) A
+        LEFT JOIN student B ON A.sid = B.sid
+where A.avg_score >= 85 AND B.sname IS NOT NULL
+;
+
+
+SELECT
+    B.sid AS sid,
+    C.sname AS sname,
+    ROUND(B.avg_score,2) AS avg_score
+FROM
+    (
+        SELECT
+            A.sid,
+            A.avg_score
+        FROM
+            (
+                SELECT
+                    DISTINCT
+                    sid AS sid,
+                    AVG(score) OVER(PARTITION BY sid) AS avg_score
+                FROM grade
+            ) A
+        where A.avg_score >= 85
+    ) B
+        LEFT JOIN student C ON B.sid = C.sid
+WHERE C.sname IS NOT NULL
+;
+
+--上面两种方式等价，Hive执行引擎会自动优化过滤条件
+--OUTPUT:
+-- sid     sname   avg_score
+-- 01      西红柿  89.67
+-- 07      郑竹    93.5
+
+-- 19.查询所有学生的课程及分数情况（存在学生没成绩，没选课的情况）
+SELECT
+    B.sid AS sid,
+    A.sname AS sname,
+    B.cid AS cid,
+    B.score AS score
+FROM student A
+         LEFT JOIN grade B ON A.sid = B.sid
+WHERE B.sid IS NOT NULL
+;
+
+--OUTPUT:
+-- sid     sname   cid     score
+-- 01      西红柿  01      80.0
+-- 01      西红柿  02      90.0
+-- 01      西红柿  03      99.0
+-- 02      钱电    01      70.0
+-- 02      钱电    02      60.0
+-- 02      钱电    03      80.0
+-- 03      孙风    01      80.0
+-- 03      孙风    02      80.0
+-- 03      孙风    03      80.0
+-- 04      李云    01      50.0
+-- 04      李云    02      30.0
+-- 04      李云    03      20.0
+-- 05      周梅    01      76.0
+-- 05      周梅    02      87.0
+-- 06      吴兰    01      31.0
+-- 06      吴兰    03      34.0
+-- 07      郑竹    02      89.0
+-- 07      郑竹    03      98.0
+
+-- 20.查询任何一门课程成绩在 70 分以上的姓名、课程名称和分数
+SELECT
+    B.sname AS sname,
+    A.cid AS cid,
+    A.score AS score
+FROM
+    (
+        SELECT
+            sid AS sid,
+            cid AS cid,
+            score AS score,
+            MIN(score) OVER(PARTITION BY sid) AS min_score
+        FROM grade
+    ) A
+        LEFT JOIN student B ON A.sid = B.sid
+WHERE A.min_score > 70 AND B.sid IS NOT NULL
+;
+
+--OUTPUT:
+-- sname   cid     score
+-- 西红柿  03      99.0
+-- 西红柿  01      80.0
+-- 西红柿  02      90.0
+-- 孙风    03      80.0
+-- 孙风    02      80.0
+-- 孙风    01      80.0
+-- 周梅    02      87.0
+-- 周梅    01      76.0
+-- 郑竹    03      98.0
+-- 郑竹    02      89.0
+
+-- 21.查询课程编号为 01 且课程成绩在 80 分以上的学生的学号和姓名
+SELECT
+    *
+FROM grade
+WHERE cid = '01' AND score > 80
+;
+
+--OUTPUT:
+--没有满足条件的结果
+
+-- 22.求每门课程的学生人数
+--同第14题
+
+-- 23.成绩不重复，查询选修「张三」老师所授课程的学生中，成绩最高的学生信息及其成绩
+SELECT
+    E.sid AS sid,
+    E.sname AS sname,
+    E.sage AS sage,
+    E.ssex AS ssex,
+    D.score AS score
+FROM
+    (
+        SELECT
+            C.sid AS sid,
+            C.score AS score,
+            ROW_NUMBER() OVER(ORDER BY C.score DESC) AS rn
+        FROM teacher A
+                 LEFT JOIN course B ON A.tid = B.tid
+                 LEFT JOIN grade C ON B.cid = C.cid
+        WHERE A.tname = '张三'
+    ) D
+        LEFT JOIN student E ON D.sid = E.sid
+WHERE D.rn = 1
+;
+
+--OUTPUT:
+-- sid     sname   sage    ssex    score
+-- 01      西红柿  1990-01-01      男      90.0
+
+-- 24.成绩有重复的情况下，查询选修「张三」老师所授课程的学生中，成绩最高的学生信息及其成绩
+SELECT
+    E.sid AS sid,
+    E.sname AS sname,
+    E.sage AS sage,
+    E.ssex AS ssex,
+    D.score AS score
+FROM
+    (
+        SELECT
+            C.sid AS sid,
+            C.score AS score,
+            RANK() OVER(ORDER BY C.score DESC) AS rn
+        FROM teacher A
+                 LEFT JOIN course B ON A.tid = B.tid
+                 LEFT JOIN grade C ON B.cid = C.cid
+        WHERE A.tname = '张三'
+    ) D
+        LEFT JOIN student E ON D.sid = E.sid
+WHERE D.rn = 1
+;
+
+--OUTPUT:
+-- sid     sname   sage    ssex    score
+-- 01      西红柿  1990-01-01      男      90.0
+
+-- 25.查询不同课程成绩相同的学生的学生编号、课程编号、学生成绩
+SELECT
+    DISTINCT
+    A.sid AS sid,
+    A.cid AS cid,
+    A.score AS score
+FROM grade A
+         LEFT JOIN grade B ON A.sid = B.sid AND A.cid != B.cid AND A.score = B.score
+WHERE B.sid IS NOT NULL
+;
+
+--OUTPUT:
+-- sid     cid     score
+-- 03      01      80.0
+-- 03      02      80.0
+-- 03      03      80.0
+
+-- 26.查询每门课程成绩最好的前两名
+SELECT
+    A.sid AS sid,
+    A.cid AS cid,
+    A.score AS score
+FROM
+    (
+        SELECT
+            *,
+            rank() OVER(PARTITION BY cid ORDER BY score DESC) AS rank
+        FROM grade
+    ) A
+WHERE A.rank <=2
+;
+
+--OUTPUT:
+-- sid     cid     score
+-- 01      01      80.0
+-- 03      01      80.0
+-- 01      02      90.0
+-- 07      02      89.0
+-- 01      03      99.0
+-- 07      03      98.0
+
+-- 27.统计每门课程的学生选修人数（超过 5 人的课程才统计）。
+SELECT
+    A.cid AS cid,
+    A.select_num AS select_num
+FROM
+    (
+        SELECT
+            DISTINCT
+            cid AS cid,
+            COUNT(DISTINCT sid) OVER(PARTITION BY cid) AS select_num
+        FROM grade
+    ) A
+WHERE A.select_num > 5
+;
+
+--OUTPUT:
+-- cid     select_num
+-- 01      6
+-- 02      6
+-- 03      7
+
+-- 28.检索至少选修两门课程的学生学号
+SELECT
+    A.sid AS sid
+FROM
+    (
+        SELECT
+            DISTINCT
+            sid AS sid,
+            COUNT(DISTINCT cid) OVER(PARTITION BY sid) AS course_num
+        FROM grade
+    ) A
+WHERE A.course_num >= 2
+;
+
+--OUTPUT:
+-- sid
+-- 01
+-- 02
+-- 03
+-- 04
+-- 05
+-- 06
+-- 07
+
+-- 29.查询选修了全部课程的学生信息
+SELECT
+    D.sid AS sid,
+    D.sname AS sname,
+    D.sage AS sage,
+    D.ssex AS ssex
+FROM
+    (
+        SELECT
+            A.sid AS sid
+        FROM
+            (
+                SELECT
+                    DISTINCT
+                    sid AS sid,
+                    COUNT(DISTINCT cid) OVER(PARTITION BY sid) AS course_num
+                FROM grade
+            ) A
+                LEFT JOIN
+            (
+                SELECT
+                    COUNT(DISTINCT cid) AS course_num
+                FROM course
+            ) B ON A.course_num = B.course_num
+        WHERE B.course_num IS NOT NULL
+    ) C
+        LEFT JOIN student D ON C.sid = D.sid
+WHERE D.sid IS NOT NULL
+;
+
+--OUTPUT:
+-- sid     sname   sage    ssex
+-- 01      西红柿  1990-01-01      男
+-- 02      钱电    1990-12-21      男
+-- 03      孙风    1990-12-20      男
+-- 04      李云    1990-12-06      男
+
+-- 30.查询各学生的年龄，只按年份来算
+SELECT
+    sid AS sid,
+    sname AS sname,
+    ssex AS ssex,
+    YEAR(CURRENT_DATE())-YEAR(sage) AS age
+FROM student
+;
+
+--OUTPUT:
+-- sid     sname   ssex    age
+-- 01      西红柿  男      31
+-- 02      钱电    男      31
+-- 03      孙风    男      31
+-- 04      李云    男      31
+-- 05      周梅    女      30
+-- 06      吴兰    女      29
+-- 07      郑竹    女      32
+-- 09      张三    女      4
+-- 10      西红柿  女      4
+-- 11      李四    女      9
+-- 12      赵六    女      8
+-- 13      孙七    女      7
