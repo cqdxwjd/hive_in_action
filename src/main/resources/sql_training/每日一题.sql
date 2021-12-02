@@ -1503,6 +1503,57 @@ INSERT OVERWRITE TABLE queue VALUES
 (1,'James Elephant',500,6)
 ;
 
+--最后一个能进入电梯的人【难度中等】，如果某个人装不下，让给下一个能装下的人上电梯，通过MySQL存储过程实现，Hive想不出实现的办法
+CREATE TABLE IF NOT EXISTS queue(
+                                    person_id INT,
+                                    person_name VARCHAR(32),
+    weight INT,
+    turn INT
+    );
+
+INSERT INTO queue VALUES
+(5,'George Washington',250,1),
+(3,'John Adams',350,2),
+(6,'Thomas Jefferson',400,3),
+(2,'Will Johnliams',200,4),
+(4,'Thomas Jefferson',175,5),
+(1,'James Elephant',500,6)
+;
+
+TRUNCATE TABLE queue;
+
+INSERT INTO queue VALUES
+(5,'George Washington',250,1),
+(3,'John Adams',350,2),
+(6,'Thomas Jefferson',500,3),
+(2,'Will Johnliams',450,4),
+(4,'Thomas Jefferson',175,5),
+(1,'James Elephant',200,6)
+;
+
+DROP PROCEDURE IF EXISTS last_person;
+DELIMITER//
+CREATE PROCEDURE last_person()
+BEGIN
+	DECLARE i INT DEFAULT 0;
+	DECLARE w INT DEFAULT 0;
+	WHILE i < (SELECT MAX(turn) FROM queue) AND w <= 1000
+	DO
+		SET i = i + 1;
+		SET w = w + (SELECT weight FROM queue WHERE turn = i);
+		IF w > 1000 THEN
+			SET w = w - (SELECT weight FROM queue WHERE turn = i);
+ELSE
+			SET @name = (SELECT person_name FROM queue WHERE turn = i);
+END IF;
+END WHILE;
+SELECT
+    @name AS 'person_name',
+        w AS total_weight;
+COMMIT;
+END//
+CALL last_person();
+
 SELECT
     B.person_name
 FROM
