@@ -1,3 +1,7 @@
+udaf/LastPersonIntoElevator.class
+jdbc/HiveJDBC.class
+udaf/LastPersonIntoElevator$LastPersonIntoEvaluator.class
+udaf/LastPersonIntoElevator$LastPersonIntoEvaluator$LastPersonAgg.class
 udtf/LineTopThree$1.class
 udtf/LineTopThree.class
-jdbc/HiveJDBC.class
+udaf/LastPersonIntoElevator$1.class
