@@ -2419,3 +2419,203 @@ FROM student
 -- 11      李四    女      9
 -- 12      赵六    女      8
 -- 13      孙七    女      7
+
+
+-- Hive中拉链表的实现思路
+-- 在数据量比较大，变化频率较低并且变化量比较小时，而且需要保存历史信息的情况下，适合采用拉链表实现。
+-- 如果数据量比较小，直接采用周期全量快照即可。
+-- ODS层全量备份表，只需要保存最多两天的数据，用来初始化拉链表，或者通过MD5算法生成每日更新表
+CREATE TABLE ods_user(
+                         id STRING,
+                         regist_date DATE,
+                         phone_num STRING
+) PARTITIONED BY(
+    dt STRING
+);
+
+INSERT OVERWRITE TABLE ods_user PARTITION(dt='2017-01-01') VALUES
+('001','2017-01-01','111111'),
+('002','2017-01-01','222222'),
+('003','2017-01-01','333333'),
+('004','2017-01-01','444444')
+;
+
+INSERT OVERWRITE TABLE ods_user PARTITION(dt='2017-01-02') VALUES
+('001','2017-01-01','111111'),
+('002','2017-01-01','233333'),
+('003','2017-01-01','333333'),
+('004','2017-01-01','432432'),
+('005','2017-01-02','555555')
+;
+
+INSERT OVERWRITE TABLE ods_user PARTITION(dt='2017-01-03') VALUES
+('001','2017-01-01','111111'),
+('002','2017-01-01','233333'),
+('003','2017-01-01','333333'),
+('004','2017-01-01','654321'),
+('005','2017-01-02','115115'),
+('006','2017-01-03','666666')
+;
+
+-- 历史拉链主表
+CREATE TABLE dwd_user(
+                         id STRING,
+                         regist_date DATE,
+                         phone_num STRING,
+                         start_date DATE,
+                         end_date DATE
+);
+
+--第一次使用2017-01-01的ODS全量数据初始化
+INSERT OVERWRITE TABLE dwd_user
+SELECT
+    id,
+    regist_date,
+    phone_num,
+    regist_date,
+    '9999-12-31'
+FROM ods_user
+WHERE dt = '2017-01-01'
+;
+
+-- 每日更新表
+CREATE TABLE dwd_user_update(
+                                id STRING,
+                                regist_date DATE,
+                                phone_num STRING
+) PARTITIONED BY(
+    dt STRING
+);
+
+--生成2017-01-02相对于2017-01-01变化的数据
+INSERT OVERWRITE TABLE dwd_user_update PARTITION(dt='2017-01-02')
+SELECT
+    A.id AS id,
+    A.regist_date AS regist_date,
+    A.phone_num AS phone_num
+FROM
+    (
+        SELECT
+            *,
+            MD5(CONCAT(id,regist_date,phone_num)) AS md5_new
+        FROM ods_user
+        WHERE dt = '2017-01-02'
+    ) A
+        LEFT JOIN
+    (
+        SELECT
+            *,
+            MD5(CONCAT(id,regist_date,phone_num)) AS md5_old
+        FROM ods_user
+        WHERE dt = '2017-01-01'
+    ) B
+    ON A.md5_new = B.md5_old
+WHERE B.id IS NULL
+;
+
+--使用2017-01-02的变化数据和前一天拉链表的存量数据更新拉链表
+INSERT OVERWRITE TABLE dwd_user
+SELECT
+    id,
+    regist_date,
+    phone_num,
+    start_date,
+    end_date
+FROM
+    (
+        SELECT
+            A.id AS id,
+            A.regist_date AS regist_date,
+            A.phone_num AS phone_num,
+            A.start_date AS start_date,
+            TO_DATE(IF(A.end_date = '9999-12-31' AND B.id IS NOT NULL,'2017-01-01',A.end_date)) AS end_date
+        FROM dwd_user A
+                 LEFT JOIN
+             (
+                 SELECT
+                     id,
+                     regist_date,
+                     phone_num
+                 FROM dwd_user_update
+                 WHERE dt = '2017-01-02'
+             ) B
+             ON A.id = B.id
+        UNION ALL
+        SELECT
+            id AS id,
+            regist_date AS regist_date,
+            phone_num AS phone_num,
+            TO_DATE('2017-01-02') AS start_date,
+            TO_DATE('9999-12-31') AS end_date
+        FROM dwd_user_update
+        WHERE dt = '2017-01-02'
+    ) C
+;
+
+
+--生成2017-01-03相对于2017-01-02变化的数据
+INSERT OVERWRITE TABLE dwd_user_update PARTITION(dt='2017-01-03')
+SELECT
+    A.id AS id,
+    A.regist_date AS regist_date,
+    A.phone_num AS phone_num
+FROM
+    (
+        SELECT
+            *,
+            MD5(CONCAT(id,regist_date,phone_num)) AS md5_new
+        FROM ods_user
+        WHERE dt = '2017-01-03'
+    ) A
+        LEFT JOIN
+    (
+        SELECT
+            *,
+            MD5(CONCAT(id,regist_date,phone_num)) AS md5_old
+        FROM ods_user
+        WHERE dt = '2017-01-02'
+    ) B
+    ON A.md5_new = B.md5_old
+WHERE B.id IS NULL
+;
+
+----使用2017-01-03的变化数据和前一天拉链表的存量数据更新拉链表......
+INSERT OVERWRITE TABLE dwd_user
+SELECT
+    id,
+    regist_date,
+    phone_num,
+    start_date,
+    end_date
+FROM
+    (
+        SELECT
+            A.id AS id,
+            A.regist_date AS regist_date,
+            A.phone_num AS phone_num,
+            A.start_date AS start_date,
+            TO_DATE(IF(A.end_date = '9999-12-31' AND B.id IS NOT NULL,'2017-01-02',A.end_date)) AS end_date
+        FROM dwd_user A
+                 LEFT JOIN
+             (
+                 SELECT
+                     id,
+                     regist_date,
+                     phone_num
+                 FROM dwd_user_update
+                 WHERE dt = '2017-01-03'
+             ) B
+             ON A.id = B.id
+        UNION ALL
+        SELECT
+            id AS id,
+            regist_date AS regist_date,
+            phone_num AS phone_num,
+            TO_DATE('2017-01-03') AS start_date,
+            TO_DATE('9999-12-31') AS end_date
+        FROM dwd_user_update
+        WHERE dt = '2017-01-03'
+    ) C
+;
+
+--https://blog.csdn.net/zhaodedong/article/details/54177686

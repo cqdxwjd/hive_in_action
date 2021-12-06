@@ -4,7 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="5a5f4b0a-63bc-4b71-9709-c3626f098dfc" name="Default Changelist" comment="" />
+    <list default="true" id="5a5f4b0a-63bc-4b71-9709-c3626f098dfc" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/sql_training/每日一题.sql" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/sql_training/每日一题.sql" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -232,6 +235,8 @@
       <workItem from="1638433099861" duration="34000" />
       <workItem from="1638437306315" duration="749000" />
       <workItem from="1638495691679" duration="24767000" />
+      <workItem from="1638614154602" duration="81000" />
+      <workItem from="1638773680225" duration="35000" />
     </task>
     <task id="LOCAL-00001" summary="sql打卡 20211109">
       <created>1636424450922</created>
@@ -373,7 +378,14 @@
       <option name="project" value="LOCAL" />
       <updated>1638614027892</updated>
     </task>
-    <option name="localTasksCounter" value="21" />
+    <task id="LOCAL-00021" summary="20211204 Hive自定义函数实现谦让上电梯">
+      <created>1638614176644</created>
+      <option name="number" value="00021" />
+      <option name="presentableId" value="LOCAL-00021" />
+      <option name="project" value="LOCAL" />
+      <updated>1638614176644</updated>
+    </task>
+    <option name="localTasksCounter" value="22" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
