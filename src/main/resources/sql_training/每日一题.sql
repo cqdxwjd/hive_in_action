@@ -2619,3 +2619,86 @@ FROM
 ;
 
 --https://blog.csdn.net/zhaodedong/article/details/54177686
+
+--查询结果的质量和占比【难度简单】
+
+CREATE TABLE queries(
+                        query_name STRING,
+                        result STRING,
+                        position INT,
+                        rating INT
+);
+
+INSERT OVERWRITE TABLE queries VALUES
+('Dog','Golden Retriever',1,5),
+('Dog','German Shepherd ',2,5),
+('Dog','Mule',200,1),
+('Cat','Shirazi',5,2),
+('Cat','Siamese',3,3),
+('Cat','Sphynx',7,4)
+;
+
+SELECT
+    query_name AS query_name,
+    ROUND(AVG(rating/position),2) AS quality,
+    ROUND(100*SUM(IF(rating < 3,1,0))/COUNT(*),2) AS poor_query_percentage
+FROM queries
+GROUP BY query_name
+;
+
+--查询球队积分【难度中等】
+
+CREATE TABLE teams(
+                      team_id INT,
+                      team_name STRING
+);
+
+CREATE TABLE matches(
+                        match_id INT,
+                        host_team INT,
+                        guest_team INT,
+                        host_goals INT,
+                        guest_goals INT
+);
+
+INSERT OVERWRITE TABLE teams VALUES
+(10,'Leetcode FC'),
+(20,'NewYork FC'),
+(30,'Atlanta FC'),
+(40,'Chicago FC'),
+(50,'Toronto FC')
+;
+
+INSERT OVERWRITE TABLE matches VALUES
+(1,10,20,3,0),
+(2,30,10,2,2),
+(3,10,50,5,1),
+(4,20,30,1,0),
+(5,50,30,1,0)
+;
+
+SELECT
+    A.team_id AS team_id,
+    A.team_name AS team_name,
+    SUM(IF(B.point IS NULL,0,B.point)) AS num_points
+FROM teams A
+         LEFT JOIN
+     (
+         SELECT
+             host_team AS team,
+             CASE WHEN host_goals > guest_goals THEN 3
+                  WHEN host_goals = guest_goals THEN 1
+                  ELSE 0 END AS point
+         FROM matches
+         UNION ALL
+         SELECT
+             guest_team AS team,
+             CASE WHEN host_goals < guest_goals THEN 3
+                  WHEN host_goals = guest_goals THEN 1
+                  ELSE 0 END AS point
+         FROM matches
+     ) B
+     ON A.team_id = B.team
+GROUP BY A.team_id,A.team_name
+ORDER BY num_points DESC,team_id ASC
+;
