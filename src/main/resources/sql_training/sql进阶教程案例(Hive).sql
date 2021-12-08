@@ -351,7 +351,111 @@ FROM products a
 ;
 
 
+CREATE TABLE seqtbl(
+                       seq INT,
+                       name STRING
+);
 
+INSERT OVERWRITE TABLE seqtbl VALUES
+(1,'DIKE'),
+(2,'AN'),
+(3,'LAILU'),
+(5,'KA'),
+(6,'MALI'),
+(8,'BEN')
+;
+
+SELECT
+    'not successive' AS gap
+FROM seqtbl
+HAVING COUNT(*) <> MAX(seq)
+;
+
+SELECT
+    MIN(A.seq + 1)
+FROM seqtbl A
+         LEFT JOIN seqtbl B
+                   ON A.seq + 1 = B.seq
+WHERE B.seq IS NULL
+;
+
+
+CREATE TABLE graduates(
+                          name STRING,
+                          income INT
+);
+
+INSERT OVERWRITE TABLE graduates VALUES
+('桑普森',400000),
+('迈克',30000),
+('怀特',20000),
+('阿诺德',20000),
+('史密斯',20000),
+('劳伦斯',15000),
+('哈德逊',15000),
+('肯特',10000),
+('贝克',10000),
+('斯科特',10000)
+;
+
+--求收入的众数
+SELECT
+    income AS income
+FROM
+    (
+        SELECT
+            A.income AS income,
+            RANK() OVER(ORDER BY A.cnt DESC) AS rank
+        FROM
+            (
+                SELECT
+                    income AS income,
+                    COUNT(income) AS cnt
+                FROM graduates
+                GROUP BY income
+            ) A
+    ) B
+WHERE B.rank = 1
+;
+
+--求中位数的SQL语句:在HAVING子句中使用非等值自连接
+SELECT
+    AVG(TMP.income)
+FROM
+    (
+        SELECT
+            T1.income AS income
+        FROM graduates T1
+                 CROSS JOIN graduates T2
+        GROUP BY T1.income
+        HAVING SUM(CASE WHEN T2.income >= T1.income THEN 1 ELSE 0 END) >= CAST(COUNT(*) / 2 AS INT)
+           AND SUM(CASE WHEN T2.income <= T1.income THEN 1 ELSE 0 END) >= CAST(COUNT(*) / 2 AS INT)
+    ) TMP
+;
+
+--找出哪些学院的学生全部都􏰀交了报告
+CREATE TABLE students(
+                         student_id INT,
+                         dpt STRING,
+                         sbmt_date DATE
+);
+
+INSERT OVERWRITE TABLE students VALUES
+(100,'理学院','2005-10-10'),
+(101,'理学院','2005-09-22'),
+(102,'文学院',NULL),
+(103,'文学院','2005-09-10'),
+(200,'文学院','2005-09-22'),
+(201,'工学院',NULL),
+(202,'经济学院','2005-09-25')
+;
+
+SELECT
+    dpt
+FROM students
+GROUP BY dpt
+HAVING COUNT(*) = COUNT(sbmt_date)
+;
 
 
 

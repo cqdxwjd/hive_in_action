@@ -4,9 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="5a5f4b0a-63bc-4b71-9709-c3626f098dfc" name="Default Changelist" comment="">
+    <list default="true" id="5a5f4b0a-63bc-4b71-9709-c3626f098dfc" name="Default Changelist" comment="sql打卡 20211208 每日一题">
+      <change afterPath="$PROJECT_DIR$/src/main/resources/sql_training/sql进阶教程案例(MySQL).sql" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/sql_training/每日一题.sql" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/sql_training/每日一题.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/sql_training/sql进阶教程案例.sql" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/sql_training/sql进阶教程案例(Hive).sql" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -159,7 +160,7 @@
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="aspect.path.notification.shown" value="true" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/src/main/resources" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/src/main/resources/sql_training" />
     <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
     <property name="nodejs_npm_path_reset_for_default_project" value="true" />
     <property name="nodejs_package_manager_path" value="npm" />
@@ -170,6 +171,7 @@
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/src/main/resources/sql_training" />
       <recent name="$PROJECT_DIR$/src/main/resources" />
     </key>
   </component>
@@ -183,6 +185,17 @@
           <option name="ENABLED" value="true" />
         </pattern>
       </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration default="true" type="ArquillianJUnit" factoryName="" nameIsGenerated="true">
+      <option name="arquillianRunConfiguration">
+        <value>
+          <option name="containerStateName" value="" />
+        </value>
+      </option>
+      <option name="TEST_OBJECT" value="class" />
       <method v="2">
         <option name="Make" enabled="true" />
       </method>
@@ -237,7 +250,9 @@
       <workItem from="1638495691679" duration="24767000" />
       <workItem from="1638614154602" duration="81000" />
       <workItem from="1638773680225" duration="75000" />
-      <workItem from="1638931069442" duration="5000" />
+      <workItem from="1638931069442" duration="36000" />
+      <workItem from="1638959087728" duration="4000" />
+      <workItem from="1638964648675" duration="805000" />
     </task>
     <task id="LOCAL-00001" summary="sql打卡 20211109">
       <created>1636424450922</created>
@@ -393,7 +408,14 @@
       <option name="project" value="LOCAL" />
       <updated>1638773743990</updated>
     </task>
-    <option name="localTasksCounter" value="23" />
+    <task id="LOCAL-00023" summary="sql打卡 20211208 每日一题">
+      <created>1638931093475</created>
+      <option name="number" value="00023" />
+      <option name="presentableId" value="LOCAL-00023" />
+      <option name="project" value="LOCAL" />
+      <updated>1638931093475</updated>
+    </task>
+    <option name="localTasksCounter" value="24" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
@@ -475,7 +497,8 @@
     <MESSAGE value="sql打卡 20211202 谦让上电梯" />
     <MESSAGE value="20211204 Hive自定义函数实现谦让上电梯" />
     <MESSAGE value="20211206 Hive中实现拉链表" />
-    <option name="LAST_COMMIT_MESSAGE" value="20211206 Hive中实现拉链表" />
+    <MESSAGE value="sql打卡 20211208 每日一题" />
+    <option name="LAST_COMMIT_MESSAGE" value="sql打卡 20211208 每日一题" />
   </component>
   <component name="editorHistoryManager">
     <entry file="jar://$MAVEN_REPOSITORY$/org/apache/hive/hive-common/1.1.1/hive-common-1.1.1-sources.jar!/org/apache/hadoop/hive/common/CompressionUtils.java" />
