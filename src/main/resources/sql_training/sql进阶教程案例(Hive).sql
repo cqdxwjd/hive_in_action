@@ -457,7 +457,85 @@ GROUP BY dpt
 HAVING COUNT(*) = COUNT(sbmt_date)
 ;
 
+CREATE TABLE Items(
+    item STRING
+);
 
+CREATE TABLE ShopItems(
+                          shop STRING,
+                          item STRING
+);
+
+INSERT OVERWRITE TABLE Items VALUES
+('啤酒'),('纸尿裤'),('自行车')
+;
+
+INSERT OVERWRITE TABLE ShopItems VALUES
+('仙台','啤酒'),
+('仙台','纸尿裤'),
+('仙台','自行车'),
+('仙台','窗帘'),
+('东京','啤酒'),
+('东京','纸尿裤'),
+('东京','自行车'),
+('大阪','电视'),
+('大阪','纸尿裤'),
+('大阪','自行车')
+;
+
+-- 查询啤酒、纸尿裤和自行车同时在库的店铺
+SELECT
+    SI.shop
+FROM
+    (
+        SELECT
+            item AS item,
+            COUNT(*) OVER() AS num
+        FROM Items
+    ) I
+        LEFT JOIN ShopItems SI
+                  ON I.item = SI.item
+GROUP BY SI.shop,I.num
+HAVING COUNT(SI.item) = MAX(I.num)
+;
+
+-- 查询啤酒、纸尿裤和自行车同时在库的店铺，且只有这三种商品的店铺
+SELECT
+    SI.shop
+FROM
+    (
+        SELECT
+            item AS item,
+            COUNT(*) OVER() AS num
+        FROM Items
+    ) I
+        FULL OUTER JOIN ShopItems SI
+                        ON I.item = SI.item
+GROUP BY SI.shop
+HAVING COUNT(SI.item) = MAX(I.num)
+   AND COUNT(I.item) = MAX(I.num)
+;
+
+--修改编号缺失的检查逻辑，使结果总是返回一行数据
+SELECT
+    IF(COUNT(*) <> MAX(seq),'not successive','successive') AS gap
+FROM seqtbl
+;
+
+--全体学生都在 9 月份提交了报告的学院
+SELECT
+    A.dpt AS dpt
+FROM
+    (
+        SELECT
+            student_id AS student_id,
+            dpt AS dpt,
+            IF(MONTH(sbmt_date) = '9','9',NULL) AS nine
+        FROM students
+    ) A
+GROUP BY A.dpt
+HAVING COUNT(*) = COUNT(A.nine)
+;
 
 
 
