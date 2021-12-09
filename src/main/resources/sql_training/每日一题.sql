@@ -2702,3 +2702,172 @@ FROM teams A
 GROUP BY A.team_id,A.team_name
 ORDER BY num_points DESC,team_id ASC
 ;
+
+--每个帖子的评论数【难度中等】
+
+CREATE TABLE submissions(
+                            sub_id INT,
+                            parent_id INT
+);
+
+INSERT OVERWRITE TABLE submissions VALUES
+(1,Null),
+(2,Null),
+(1,Null),
+(12,Null),
+(3,1),
+(5,2),
+(3,1),
+(4,1),
+(9,1),
+(10,2),
+(6,7)
+;
+
+-- 结果表：
+-- +---------+--------------------+
+-- | post_id | number_of_comments |
+-- +---------+--------------------+
+-- | 1       | 3                  |
+-- | 2       | 2                  |
+-- | 12      | 0                  |
+-- +---------+--------------------+
+
+-- 表中 ID 为 1 的帖子有 ID 为 3、4 和 9 的三个评论。表中 ID 为 3 的评论重复出现了，所以我们只对它进行了一次计数。
+-- 表中 ID 为 2 的帖子有 ID 为 5 和 10 的两个评论。
+-- ID 为 12 的帖子在表中没有评论。
+-- 表中 ID 为 6 的评论是对 ID 为 7 的已删除帖子的评论，因此我们将其忽略。
+
+SELECT
+    A.sub_id AS post_id,
+    COUNT(DISTINCT B.sub_id,B.parent_id) AS number_of_comments
+FROM
+    (
+        SELECT
+            DISTINCT
+            sub_id
+        FROM submissions
+        WHERE parent_id IS NULL
+    ) A
+        LEFT JOIN submissions B
+                  ON A.sub_id = B.parent_id
+GROUP BY A.sub_id
+ORDER BY post_id ASC
+;
+
+--OUTPUT:
+-- post_id number_of_comments
+-- 1       3
+-- 2       2
+-- 12      0
+
+--报告系统状态的连续日期【难度困难】
+
+CREATE TABLE failed(
+    fail_date DATE
+);
+
+CREATE TABLE succeeded(
+    success_date DATE
+);
+
+INSERT OVERWRITE TABLE failed VALUES
+('2018-12-28'),
+('2018-12-29'),
+('2019-01-04'),
+('2019-01-05')
+;
+
+INSERT OVERWRITE TABLE succeeded VALUES
+('2018-12-30'),
+('2018-12-31'),
+('2019-01-01'),
+('2019-01-02'),
+('2019-01-03'),
+('2019-01-06')
+;
+
+-- Result table:
+-- +--------------+--------------+--------------+
+-- | period_state | start_date   | end_date     |
+-- +--------------+--------------+--------------+
+-- | succeeded    | 2019-01-01   | 2019-01-03   |
+-- | failed       | 2019-01-04   | 2019-01-05   |
+-- | succeeded    | 2019-01-06   | 2019-01-06   |
+-- +--------------+--------------+--------------+
+-- 结果忽略了 2018 年的记录，因为我们只关心从 2019-01-01 到 2019-12-31 的记录
+-- 从 2019-01-01 到 2019-01-03 所有任务成功，系统状态为 "succeeded"。
+-- 从 2019-01-04 到 2019-01-05 所有任务失败，系统状态为 "failed"。
+-- 从 2019-01-06 到 2019-01-06 所有任务成功，系统状态为 "succeeded"。
+WITH TMP AS
+         (
+             SELECT
+                 fail_date AS new_date,
+                 "failed" AS state
+             FROM failed
+             WHERE fail_date BETWEEN '2019-01-01' AND '2019-12-31'
+             UNION ALL
+             SELECT
+                 success_date AS new_date,
+                 "succeeded" AS state
+             FROM succeeded
+             WHERE success_date BETWEEN '2019-01-01' AND '2019-12-31'
+         )
+SELECT
+    B.state AS period_state,
+    COLLECT_LIST(B.new_date)[0] AS start_date,
+    COLLECT_LIST(B.new_date)[SIZE(COLLECT_LIST(B.new_date))-1] AS end_date
+FROM
+    (
+    SELECT
+    A.new_date AS new_date,
+    A.state AS state,
+    DATE_SUB(A.new_date,ROW_NUMBER() OVER(PARTITION BY A.state ORDER BY A.new_date)) AS virtual_date
+    FROM TMP A
+    ) B
+GROUP BY B.state,B.virtual_date
+ORDER BY start_date
+;
+
+--OUTPUT:
+-- period_state    start_date      end_date
+-- succeeded       2019-01-01      2019-01-03
+-- failed  2019-01-04      2019-01-05
+-- succeeded       2019-01-06      2019-01-06
+
+--另一种方法，区别在于使用窗口函数而不是集合函数，但是在要比上一种方法效率低
+WITH TMP AS
+         (
+             SELECT
+                 fail_date AS new_date,
+                 "failed" AS state
+             FROM failed
+             WHERE fail_date BETWEEN '2019-01-01' AND '2019-12-31'
+             UNION ALL
+             SELECT
+                 success_date AS new_date,
+                 "succeeded" AS state
+             FROM succeeded
+             WHERE success_date BETWEEN '2019-01-01' AND '2019-12-31'
+         )
+SELECT
+    DISTINCT
+    B.state AS period_state,
+    FIRST_VALUE(B.new_date) OVER(PARTITION BY B.state,B.virtual_date ORDER BY B.new_date ASC) AS start_date,
+        FIRST_VALUE(B.new_date) OVER(PARTITION BY B.state,B.virtual_date ORDER BY B.new_date DESC) AS end_date
+FROM
+    (
+        SELECT
+            A.new_date AS new_date,
+            A.state AS state,
+            DATE_SUB(A.new_date,ROW_NUMBER() OVER(PARTITION BY A.state ORDER BY A.new_date)) AS virtual_date
+        FROM TMP A
+    ) B
+ORDER BY start_date
+;
+
+--OUTPUT:
+-- period_state    start_date      end_date
+-- succeeded       2019-01-01      2019-01-03
+-- failed  2019-01-04      2019-01-05
+-- succeeded       2019-01-06      2019-01-06
