@@ -4,9 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="5a5f4b0a-63bc-4b71-9709-c3626f098dfc" name="Default Changelist" comment="sql打卡 20211209 每日一题">
+    <list default="true" id="5a5f4b0a-63bc-4b71-9709-c3626f098dfc" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/sql_training/sql进阶教程案例(Hive).sql" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/sql_training/sql进阶教程案例(Hive).sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/sql_training/每日一题.sql" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/sql_training/每日一题.sql" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -243,7 +243,8 @@
       <workItem from="1638964648675" duration="854000" />
       <workItem from="1639018733630" duration="37000" />
       <workItem from="1639036853448" duration="2192000" />
-      <workItem from="1639048036873" duration="22000" />
+      <workItem from="1639048036873" duration="74000" />
+      <workItem from="1639105860563" duration="7000" />
     </task>
     <task id="LOCAL-00001" summary="sql打卡 20211109">
       <created>1636424450922</created>
@@ -420,7 +421,14 @@
       <option name="project" value="LOCAL" />
       <updated>1639018761560</updated>
     </task>
-    <option name="localTasksCounter" value="26" />
+    <task id="LOCAL-00026" summary="SQL进阶 20211209 1-4HAVING子句的力量">
+      <created>1639048101268</created>
+      <option name="number" value="00026" />
+      <option name="presentableId" value="LOCAL-00026" />
+      <option name="project" value="LOCAL" />
+      <updated>1639048101268</updated>
+    </task>
+    <option name="localTasksCounter" value="27" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
@@ -505,7 +513,8 @@
     <MESSAGE value="sql打卡 20211208 每日一题" />
     <MESSAGE value="SQL进阶 20211208" />
     <MESSAGE value="sql打卡 20211209 每日一题" />
-    <option name="LAST_COMMIT_MESSAGE" value="sql打卡 20211209 每日一题" />
+    <MESSAGE value="SQL进阶 20211209 1-4HAVING子句的力量" />
+    <option name="LAST_COMMIT_MESSAGE" value="SQL进阶 20211209 1-4HAVING子句的力量" />
   </component>
   <component name="editorHistoryManager">
     <entry file="jar://$MAVEN_REPOSITORY$/org/apache/hive/hive-common/1.1.1/hive-common-1.1.1-sources.jar!/org/apache/hadoop/hive/common/CompressionUtils.java" />

@@ -2871,3 +2871,225 @@ ORDER BY start_date
 -- succeeded       2019-01-01      2019-01-03
 -- failed  2019-01-04      2019-01-05
 -- succeeded       2019-01-06      2019-01-06
+
+
+--平均售价【难度中等】
+
+DROP TABLE IF EXISTS prices;
+CREATE TABLE prices(
+                       product_id INT,
+                       start_date DATE,
+                       end_date DATE,
+                       price INT
+);
+
+DROP TABLE IF EXISTS unitssold;
+CREATE TABLE unitssold(
+                          product_id INT,
+                          purchase_date DATE,
+                          units INT
+);
+
+INSERT OVERWRITE TABLE prices VALUES
+(1,'2019-02-17','2019-02-28',5),
+(1,'2019-03-01','2019-03-22',20),
+(2,'2019-02-01','2019-02-20',15),
+(2,'2019-02-21','2019-03-31',30)
+;
+
+INSERT OVERWRITE TABLE unitssold VALUES
+(1,'2019-02-25',100),
+(1,'2019-03-01',15),
+(2,'2019-02-10',200),
+(2,'2019-03-22',30)
+;
+
+
+-- Result table:
+-- +------------+---------------+
+-- | product_id | average_price |
+-- +------------+---------------+
+-- | 1          | 6.96          |
+-- | 2          | 16.96         |
+-- +------------+---------------+
+-- 平均售价 = 产品总价 / 销售的产品数量。
+-- 产品 1 的平均售价 = ((100 * 5)+(15 * 20) )/ 115 = 6.96
+-- 产品 2 的平均售价 = ((200 * 15)+(30 * 30) )/ 230 = 16.96
+
+
+--编写SQL查询以查找每种产品的平均售价。 average_price 应该四舍五入到小数点后两位。
+SELECT
+    A.product_id AS product_id,
+    ROUND(SUM(A.price*B.units)/SUM(B.units),2) AS average_price
+FROM prices A
+         INNER JOIN unitssold B
+                    ON A.product_id = B.product_id AND B.purchase_date BETWEEN A.start_date AND A.end_date
+GROUP BY A.product_id
+;
+
+--OUTPUT:
+-- 1       6.96
+-- 2       16.96
+
+--页面推荐【难度中等】
+
+DROP TABLE IF EXISTS friendship;
+CREATE TABLE friendship(
+                           user1_id INT,
+                           user2_id INT
+);
+
+DROP TABLE IF EXISTS likes;
+CREATE TABLE likes(
+                      user_id INT,
+                      page_id INT
+);
+
+INSERT OVERWRITE TABLE friendship VALUES
+(1,2),
+(1,3),
+(1,4),
+(2,3),
+(2,4),
+(2,5),
+(6,1)
+;
+
+INSERT OVERWRITE TABLE likes VALUES
+(1,88),
+(2,23),
+(3,24),
+(4,56),
+(5,11),
+(6,33),
+(2,77),
+(3,77),
+(6,88)
+;
+
+-- Result table:
+-- +------------------+
+-- | recommended_page |
+-- +------------------+
+-- | 23               |
+-- | 24               |
+-- | 56               |
+-- | 33               |
+-- | 77               |
+-- +------------------+
+-- 用户1 同 用户2, 3, 4, 6 是朋友关系。
+-- 推荐页面为： 页面23 来自于 用户2, 页面24 来自于 用户3, 页面56 来自于 用户3 以及 页面33 来自于 用户6。
+-- 页面77 同时被 用户2 和 用户3 推荐。
+-- 页面88 没有被推荐，因为 用户1 已经喜欢了它。
+
+-- 写一段 SQL 向user_id = 1 的用户，推荐其朋友们喜欢的页面。不要推荐该用户已经喜欢的页面。返回的结果中不应当包含重复项。
+-- 先找出每个人的所有朋友
+SELECT
+    C.user_id AS user_id,
+    TMP.friend AS friend
+FROM
+    (
+        SELECT
+            A.user1_id AS user_id,
+            SPLIT(CONCAT_WS(',',COLLECT_SET(CAST(A.user2_id AS STRING)),COLLECT_SET(CAST(B.user1_id AS STRING))),',') AS friends
+        FROM friendship A
+                 LEFT JOIN friendship B
+                           ON A.user1_id = B.user2_id
+        GROUP BY A.user1_id
+    ) C
+    LATERAL VIEW EXPLODE(C.friends) TMP AS friend
+WHERE friend IS NOT NULL AND friend <> ''
+UNION
+SELECT
+    C.user_id AS user_id,
+    TMP.friend AS friend
+FROM
+    (
+        SELECT
+            A.user2_id AS user_id,
+            SPLIT(CONCAT_WS(',',COLLECT_SET(CAST(A.user1_id AS STRING)),COLLECT_SET(CAST(B.user2_id AS STRING))),',') AS friends
+        FROM friendship A
+                 LEFT JOIN friendship B
+                           ON A.user2_id = B.user1_id
+        GROUP BY A.user2_id
+    ) C
+    LATERAL VIEW EXPLODE(C.friends) TMP AS friend
+WHERE friend IS NOT NULL AND friend <> ''
+;
+
+--OUTPUT:
+-- _u1.user_id     _u1.friend
+-- 1       2
+-- 1       3
+-- 1       4
+-- 1       6
+-- 2       1
+-- 2       3
+-- 2       4
+-- 2       5
+-- 3       1
+-- 3       2
+-- 4       1
+-- 4       2
+-- 5       2
+-- 6       1
+
+--下一步，找出用户1的朋友，与likes表关联即可
+SELECT
+    DISTINCT
+    E.page_id AS recommended_page
+FROM
+    (
+        SELECT
+            C.user_id AS user_id,
+            TMP.friend AS friend
+        FROM
+            (
+                SELECT
+                    A.user1_id AS user_id,
+                    SPLIT(CONCAT_WS(',',COLLECT_SET(CAST(A.user2_id AS STRING)),COLLECT_SET(CAST(B.user1_id AS STRING))),',') AS friends
+                FROM friendship A
+                         LEFT JOIN friendship B
+                                   ON A.user1_id = B.user2_id
+                GROUP BY A.user1_id
+            ) C
+            LATERAL VIEW EXPLODE(C.friends) TMP AS friend
+        WHERE friend IS NOT NULL AND friend <> ''
+        UNION
+        SELECT
+            C.user_id AS user_id,
+            TMP.friend AS friend
+        FROM
+            (
+            SELECT
+            A.user2_id AS user_id,
+            SPLIT(CONCAT_WS(',',COLLECT_SET(CAST(A.user1_id AS STRING)),COLLECT_SET(CAST(B.user2_id AS STRING))),',') AS friends
+            FROM friendship A
+            LEFT JOIN friendship B
+            ON A.user2_id = B.user1_id
+            GROUP BY A.user2_id
+            ) C
+            LATERAL VIEW EXPLODE(C.friends) TMP AS friend
+        WHERE friend IS NOT NULL AND friend <> ''
+    ) D
+        LEFT JOIN likes E
+                  ON CAST(D.friend AS INT) = E.user_id
+        LEFT JOIN
+    (
+        SELECT
+            user_id,
+            page_id
+        FROM likes
+        WHERE user_id = 1
+    ) F
+    ON E.page_id = F.page_id
+WHERE D.user_id = '1' AND F.page_id IS NULL
+;
+
+--OUTPUT:
+-- recommended_page
+-- 23
+-- 24
+-- 33
+-- 56
+-- 77
