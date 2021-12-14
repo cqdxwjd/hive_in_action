@@ -3093,3 +3093,98 @@ WHERE D.user_id = '1' AND F.page_id IS NULL
 -- 33
 -- 56
 -- 77
+
+--向CEO汇报工作的人【难度中等】
+
+DROP TABLE IF EXISTS employees;
+CREATE TABLE employees(
+                          employee_id INT,
+                          employee_name STRING,
+                          manager_id INT
+);
+
+INSERT OVERWRITE TABLE employees VALUES
+(1,'Boss',1),
+(3,'Alice',3),
+(2,'Bob',1),
+(4,'Daniel',2),
+(7,'Luis',4),
+(8,'Jhon',3),
+(9,'Angela',8),
+(77,'Robert',1)
+;
+
+-- Result table:
+-- +-------------+
+-- | employee_id |
+-- +-------------+
+-- | 2           |
+-- | 77          |
+-- | 4           |
+-- | 7           |
+-- +-------------+
+-- 公司 CEO 的 employee_id 是 1.
+-- employee_id 是 2 和 77 的职员直接汇报给公司 CEO。
+-- employee_id 是 4 的职员间接汇报给公司 CEO 4 --> 2 --> 1 。
+-- employee_id 是 7 的职员间接汇报给公司 CEO 7 --> 4 --> 2 --> 1 。
+-- employee_id 是 3, 8 ，9 的职员不会直接或间接的汇报给公司 CEO。
+
+SELECT
+    id
+FROM
+    (
+        SELECT
+            ARRAY(A.employee_id,B.employee_id,C.employee_id,D.employee_id) AS arr
+        FROM
+            (
+                SELECT
+                    employee_id
+                FROM employees
+                WHERE manager_id = 1 AND employee_id <> 1
+            ) A
+                LEFT JOIN employees B
+                          ON A.employee_id = B.manager_id
+                LEFT JOIN employees C
+                          ON B.employee_id = C.manager_id
+                LEFT JOIN employees D
+                          ON C.employee_id = D.manager_id
+    ) E
+    LATERAL VIEW EXPLODE(E.arr) TBL AS id
+WHERE id IS NOT NULL
+;
+
+--OUTPUT:
+-- OK
+-- 2
+-- 4
+-- 7
+-- 77
+
+--找到连续区间的开始和结束数字【难度中等】
+
+DROP TABLE IF EXISTS logs;
+CREATE TABLE logs(
+    log_id INT
+);
+
+INSERT OVERWRITE TABLE logs VALUES
+(1),(2),(3),(7),(8),(10);
+
+SELECT
+    MIN(A.log_id) AS start_id,
+    MAX(A.log_id) AS end_id
+FROM
+    (
+        SELECT
+            log_id AS log_id,
+            log_id-ROW_NUMBER() OVER(ORDER BY log_id) AS label
+        FROM logs
+    ) A
+GROUP BY A.label
+;
+
+--OUTPUT:
+-- OK
+-- 1       3
+-- 7       8
+-- 10      10
