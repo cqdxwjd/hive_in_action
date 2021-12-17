@@ -3188,3 +3188,191 @@ GROUP BY A.label
 -- 1       3
 -- 7       8
 -- 10      10
+
+--求团队人数【难度中等】
+
+DROP TABLE IF EXISTS employee;
+CREATE TABLE employee(
+                         employee_id INT,
+                         team_id INT
+);
+
+INSERT OVERWRITE TABLE employee VALUES
+(1,8),
+(2,8),
+(3,8),
+(4,7),
+(5,9),
+(6,9)
+;
+
+-- Result table:
+-- +-------------+------------+
+-- | employee_id | team_size  |
+-- +-------------+------------+
+-- |     1       |     3      |
+-- |     2       |     3      |
+-- |     3       |     3      |
+-- |     4       |     1      |
+-- |     5       |     2      |
+-- |     6       |     2      |
+-- +-------------+------------+
+-- ID 为 1、2、3 的员工是 team_id 为 8 的团队的成员，
+-- ID 为 4 的员工是 team_id 为 7 的团队的成员，
+-- ID 为 5、6 的员工是 team_id 为 9 的团队的成员。
+
+--求得每个员工所在团队的总人数
+SELECT
+    employee_id AS employee_id,
+    COUNT(*) OVER(PARTITION BY team_id) AS team_size
+FROM employee
+;
+
+--OUTPUT:
+employee_id     team_size
+4       1
+3       3
+2       3
+1       3
+6       2
+5       2
+
+
+--不同性别每日分数总计【难度中等】
+
+DROP TABLE IF EXISTS scores;
+CREATE TABLE scores(
+                       player_name STRING,
+                       gender STRING,
+                       day DATE,
+                       score_points INT
+);
+
+INSERT OVERWRITE TABLE scores VALUES
+('Aron    ','F','2020-01-01',17),
+('Alice   ','F','2020-01-07',23),
+('Bajrang ','M','2020-01-07',7 ),
+('Khali   ','M','2019-12-25',11),
+('Slaman  ','M','2019-12-30',13),
+('Joe     ','M','2019-12-31',3 ),
+('Jose    ','M','2019-12-18',2 ),
+('Priya   ','F','2019-12-31',23),
+('Priyanka','F','2019-12-30',17)
+;
+
+-- 结果表:
+-- +--------+------------+-------+
+-- | gender | day        | total |
+-- +--------+------------+-------+
+-- | F      | 2019-12-30 | 17    |
+-- | F      | 2019-12-31 | 40    |
+-- | F      | 2020-01-01 | 57    |
+-- | F      | 2020-01-07 | 80    |
+-- | M      | 2019-12-18 | 2     |
+-- | M      | 2019-12-25 | 13    |
+-- | M      | 2019-12-30 | 26    |
+-- | M      | 2019-12-31 | 29    |
+-- | M      | 2020-01-07 | 36    |
+-- +--------+------------+-------+
+-- 女性队伍:
+-- 第一天是 2019-12-30，Priyanka 获得 17 分，队伍的总分是 17 分
+-- 第二天是 2019-12-31, Priya 获得 23 分，队伍的总分是 40 分
+-- 第三天是 2020-01-01, Aron 获得 17 分，队伍的总分是 57 分
+-- 第四天是 2020-01-07, Alice 获得 23 分，队伍的总分是 80 分
+-- 男性队伍：
+-- 第一天是 2019-12-18, Jose 获得 2 分，队伍的总分是 2 分
+-- 第二天是 2019-12-25, Khali 获得 11 分，队伍的总分是 13 分
+-- 第三天是 2019-12-30, Slaman 获得 13 分，队伍的总分是 26 分
+-- 第四天是 2019-12-31, Joe 获得 3 分，队伍的总分是 29 分
+-- 第五天是 2020-01-07, Bajrang 获得 7 分，队伍的总分是 36 分
+
+--写一条SQL语句查询每种性别在每一天的总分，并按性别和日期对查询结果排序
+SELECT
+    gender AS gender,
+    day AS day,
+    SUM(score_points) OVER(PARTITION BY gender ORDER BY gender,day) AS total
+FROM scores
+;
+
+--OUTPUT:
+gender  day     total
+F       2019-12-30      17
+F       2019-12-31      40
+F       2020-01-01      57
+F       2020-01-07      80
+M       2019-12-18      2
+M       2019-12-25      13
+M       2019-12-30      26
+M       2019-12-31      29
+M       2020-01-07      36
+
+
+--餐馆营业额变化增长【难度中等】
+
+DROP TABLE IF EXISTS customer;
+CREATE TABLE customer(
+                         customer_id INT,
+                         name STRING,
+                         visited_on DATE,
+                         amount INT
+);
+
+INSERT OVERWRITE TABLE customer VALUES
+(1,'Jhon   ','2019-01-01',100),
+(2,'Daniel ','2019-01-02',110),
+(3,'Jade   ','2019-01-03',120),
+(4,'Khaled ','2019-01-04',130),
+(5,'Winston','2019-01-05',110),
+(6,'Elvis  ','2019-01-06',140),
+(7,'Anna   ','2019-01-07',150),
+(8,'Maria  ','2019-01-08',80 ),
+(9,'Jaze   ','2019-01-09',110),
+(1,'Jhon   ','2019-01-10',130),
+(3,'Jade   ','2019-01-10',150)
+;
+
+-- 结果表:
+-- +--------------+--------------+----------------+
+-- | visited_on   | amount       | average_amount |
+-- +--------------+--------------+----------------+
+-- | 2019-01-07   | 860          | 122.86         |
+-- | 2019-01-08   | 840          | 120            |
+-- | 2019-01-09   | 840          | 120            |
+-- | 2019-01-10   | 1000         | 142.86         |
+-- +--------------+--------------+----------------+
+
+-- 第一个七天消费平均值从 2019-01-01 到 2019-01-07 是 (100 + 110 + 120 + 130 + 110 + 140 + 150)/7 = 122.86
+-- 第二个七天消费平均值从 2019-01-02 到 2019-01-08 是 (110 + 120 + 130 + 110 + 140 + 150 + 80)/7 = 120
+-- 第三个七天消费平均值从 2019-01-03 到 2019-01-09 是 (120 + 130 + 110 + 140 + 150 + 80 + 110)/7 = 120
+-- 第四个七天消费平均值从 2019-01-04 到 2019-01-10 是 (130 + 110 + 140 + 150 + 80 + 110 + 130 + 150)/7 = 142.86
+
+--写一条 SQL 查询计算以 7 天（某日期 + 该日期前的 6 天）为一个时间段的顾客消费平均值
+--查询结果按 visited_on 排序
+--average_amount 要 保留两位小数，日期数据的格式为 ('YYYY-MM-DD')
+SELECT
+    *
+FROM
+    (
+        SELECT
+            A.visited_on AS visited_on,
+            SUM(A.amount) OVER(ORDER BY A.visited_on ROWS BETWEEN 6 PRECEDING AND CURRENT ROW) AS amount,
+                ROUND(SUM(A.amount) OVER(ORDER BY A.visited_on ROWS BETWEEN 6 PRECEDING AND CURRENT ROW)/7,2) AS average_amount
+        FROM
+            (
+                SELECT
+                    visited_on,
+                    SUM(amount) AS amount
+                FROM customer
+                GROUP BY visited_on
+                ORDER BY visited_on
+            ) A
+    ) B
+WHERE B.visited_on >= '2019-01-07'
+;
+
+--OUTPUT:
+b.visited_on    b.amount        b.average_amount
+2019-01-07      860     122.86
+2019-01-08      840     120.0
+2019-01-09      840     120.0
+2019-01-10      1000    142.86
