@@ -973,7 +973,7 @@ GROUP BY id
 
 --Hive中生成日期维度表
 CREATE TABLE dim_date(
-                         day STRING COMMENT '日期,yyyy-MM-dd 格式',
+                         day STRING COMMENT '日期,yyyyMMdd 格式',
                          week BIGINT COMMENT '本周星期几,数值型,1-星期一,2-星期二,......,7-星期天',
                          week_en STRING COMMENT '本周星期几英文名,文本型,Mon,Tue,Wed,Thu,Fri,Sat,Sun',
                          week_of_year BIGINT COMMENT '本年第几周,数值型,1,2,3......',
