@@ -4,10 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="5a5f4b0a-63bc-4b71-9709-c3626f098dfc" name="Default Changelist" comment="sql打卡 20211217 每日一题">
+    <list default="true" id="5a5f4b0a-63bc-4b71-9709-c3626f098dfc" name="Default Changelist" comment="SQL进阶 2022-02-16">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/sql_training/sql进阶教程案例(MySQL).sql" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/sql_training/sql进阶教程案例(MySQL).sql" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/sql_training/每日一题.sql" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/sql_training/每日一题.sql" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -257,7 +255,11 @@
       <workItem from="1643009458343" duration="1892000" />
       <workItem from="1643176092321" duration="557000" />
       <workItem from="1644892446323" duration="481000" />
-      <workItem from="1645004418538" duration="74000" />
+      <workItem from="1645004418538" duration="114000" />
+      <workItem from="1649991306825" duration="888000" />
+      <workItem from="1652698433583" duration="792000" />
+      <workItem from="1657267739778" duration="17000" />
+      <workItem from="1661329673374" duration="851000" />
     </task>
     <task id="LOCAL-00001" summary="sql打卡 20211109">
       <created>1636424450922</created>
@@ -462,7 +464,14 @@
       <option name="project" value="LOCAL" />
       <updated>1639732694623</updated>
     </task>
-    <option name="localTasksCounter" value="30" />
+    <task id="LOCAL-00030" summary="SQL进阶 2022-02-16">
+      <created>1645004524649</created>
+      <option name="number" value="00030" />
+      <option name="presentableId" value="LOCAL-00030" />
+      <option name="project" value="LOCAL" />
+      <updated>1645004524649</updated>
+    </task>
+    <option name="localTasksCounter" value="31" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
@@ -524,7 +533,6 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="sql打卡 20211111" />
     <MESSAGE value="sql打卡 20211112" />
     <MESSAGE value="sql打卡 20211113" />
     <MESSAGE value="sql打卡 20211118" />
@@ -549,7 +557,8 @@
     <MESSAGE value="sql打卡 20211210 每日一题" />
     <MESSAGE value="sql打卡 20211214 每日一题" />
     <MESSAGE value="sql打卡 20211217 每日一题" />
-    <option name="LAST_COMMIT_MESSAGE" value="sql打卡 20211217 每日一题" />
+    <MESSAGE value="SQL进阶 2022-02-16" />
+    <option name="LAST_COMMIT_MESSAGE" value="SQL进阶 2022-02-16" />
   </component>
   <component name="editorHistoryManager">
     <entry file="jar://$MAVEN_REPOSITORY$/org/apache/hive/hive-common/1.1.1/hive-common-1.1.1-sources.jar!/org/apache/hadoop/hive/common/CompressionUtils.java" />
